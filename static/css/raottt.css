@@ -1,0 +1,105 @@
+
+.stats {
+	position: absolute;
+	top: 0;
+	left: 0;
+	border: 1px solid Green;
+	height: 100px;
+	font-family: Verdana;
+}
+
+.overlay {
+    background-color: #000;
+    bottom: 0;
+    display: none;
+    left: 0;
+    opacity: 0.3;
+    filter: alpha(opacity = 30); /* IE7 & 8 */
+    position: fixed;
+    right: 0;
+    top: 0;
+    z-index: 99;
+}
+
+#Board {
+	position: absolute;
+	top: 50px;
+    width: 500px;
+    height: 500px;
+}
+
+.tile {
+    position: absolute;
+    border: 1px dashed LightGray;
+    z-index: 1;
+}
+
+.benchTile {
+	position: absolute;
+	z-index: 1;
+	border: 1px solid Yellow;
+}
+
+.piece {
+    position: absolute;
+    z-index: 2;	
+    font-family: Verdana;
+    color: White;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.Red {
+	background-color: DarkRed;
+}
+
+.Blue {
+	background-color: DarkBlue;
+}
+
+.draggable {
+}
+
+.droppable {
+}
+
+.drop-hover {
+	border: 1px solid Black;
+}
+
+.padding {
+	padding: 5px;
+}
+
+.iconButton {
+	height: 50px;
+	float: right;
+}
+
+.right {
+	float: right;
+}
+
+.left {
+	float: left;
+}
+
+.occupied {
+}
+
+#Score {
+	height: 50px;
+	float: left;
+	font-family: Verdana;
+	font-size: 28px;
+}
+
+#my_popup {
+	background-color: White;
+	border: 1px solid Black;
+	font-family: Verdana;
+	font-size: 14px;
+	line-height: 18px;
+	padding: 20px;
+	margin: 20px;
+}
