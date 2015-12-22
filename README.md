@@ -11,11 +11,10 @@ Once the time is up the player is forces to move that piece. This ensure a
 player does not occupy the center spot for the entire game, and adds another
 dimension for the player to consider.
 
-![Simple Console Game](../screenshots/raottt.png)
 
 ### To Install
 ```bash
-$ git clone https://github.com/giraffapus/raottt.git
+$ git clone https://github.com/christianreimer/raottt.git
 $ cd raottt
 $ pip install -r requirements.txt
 ```
@@ -63,16 +62,4 @@ GET raott/player/upid
 	secret: 'user_secret'
 }
 
-
-### Notes
-
-PlayerStore wrapper around redis
-- create() creates a new player
-- get(upid) returns the player identified by upid
-- update_score(upid, score) increments upids score
-
-GameStore wrapper around redis
- - checkout(upid) returns a game that upid can play
- - checkin(game) returns a game to the GameStore for the next player grab
- - get(ugid) returns the game identified by ugid
 
