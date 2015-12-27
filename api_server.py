@@ -23,10 +23,10 @@ from raottt.player.computer import ComputerPlayer
 from raottt.util import adapter
 
 
-library = Library()
+library = Library(verbose=True)
 # library.load(json.loads(open('games.json').read()))
 bench = Bench()
-spok = ComputerPlayer('Red', opponent, name='Spok')
+spok = ComputerPlayer('Blue', opponent, name='Spok')
 bench.register(spok)
 app = Flask(__name__, static_url_path='')
 api = Api(app)
@@ -128,7 +128,7 @@ class Player(Resource):
 
     def post(self):
         """Create a new user"""
-        player = RESTPlayer('Blue', opponent)
+        player = RESTPlayer('Red', opponent)
         bench.register(player)
         print("***** NEW USER CREATED *****")
         print("* I shall call you {}".format(player.name))
@@ -149,5 +149,5 @@ def root():
 
 if __name__ == '__main__':
     # app.run(host='0.0.0.0', port=8888, debug=True)
-    app.run(port=8888, debug=True)
+    app.run()  # port=8888, debug=True)
 

@@ -13,30 +13,24 @@ function raottt() {
     showWelcome = true;
 
     // Overlay is used to blank out the board while getting a new game
-    // from the server.
+    // from the server
     $("#Overlay").hide(0);
-
-    // The sidebar contains additional stats and settings.
-    setupSideBar();
 
     // The REST interface back to the server.
     setupRestInterface();
 
     // To support many different screen sizes, everything is calculated based
     // on the window size.
-    // sizes = calculateSizeFactors(window.innerWidth, window.innerHeight);
     sizes = calculateSizeFactors($('#Board').width(), $('#Board').height());
 
     positionBoard(sizes);
-
-    // layoutBoard(sizes.tile, sizes.padding);
 
     getUserToken().pipe(resetBoard);
 }
 
 
 function setupRestInterface() {
-    restClient = new $.RestClient('http://127.0.0.1:8888/');
+    restClient = new $.RestClient('http://127.0.0.1:5000/');
     // restClient = new $.RestClient('http://192.168.1.6:8888/');
     restClient.add('game');
     restClient.add('player');
@@ -45,6 +39,7 @@ function setupRestInterface() {
 
 function getUserToken() {
     console.log("getUserToken called")
+
     var deferred = $.Deferred();
 
     var token = $.cookie('token');
@@ -53,10 +48,11 @@ function getUserToken() {
         request.done(function(data) {
             $.cookie('name', data.name);
             $.cookie('color', data.color);
-            $('#HelpText').html(returnAnonGreeting(
+            $('#HelpText').html(returnGreeting(
                 $.cookie('name'), $.cookie('color'), data.score));
             userToken = data.token;
             score = data.score;
+            updateScore(score);
             deferred.resolve(data.token);
         });
     } else {
@@ -68,6 +64,8 @@ function getUserToken() {
             $('#HelpText').html(firstTimeGreeting(
                 $.cookie('name'), $.cookie('color')));
             userToken = data.token;
+            score = 0;
+            updateScore(score);
             deferred.resolve(data.token);
         });
     }
@@ -84,6 +82,7 @@ function getGame(token) {
     // }
 
     if(!token) {
+        console.log("Why are we getting here????")
         token = $.cookie('token');
     }
 
@@ -143,8 +142,9 @@ function resetBoard(token) {
         layoutBoard).pipe(
             addPieces).pipe(
                 scalePieces).pipe(
-                    setupInteraction).pipe(
-                        showStats);
+                    showInstructions).pipe(
+                        setupInteraction).pipe(
+                            showStats);
 }
 
 
@@ -260,7 +260,7 @@ function calculatePosition(i) {
 
 
 function processMove(color, source, target) {
-    $('#Overlay').show();
+ $('#Overlay').show();
 
     console.log(color + " moved from " + source + " to " + target);
 
@@ -276,11 +276,8 @@ function processMove(color, source, target) {
         console.log("Response from PUT %o", data);
         
         $.removeCookie('game');
-        $("#ScoreNumber").html(data.score);
 
-        if(data.displayMsg) {
-            alert(data.message);
-        }
+        updateScore(data.score);
         
         // Remove all the droppable and click handlers before re-constructing
         // the board
@@ -296,7 +293,7 @@ function processMove(color, source, target) {
 }
 
 
-function setupInteraction() {
+function setupInteraction(data) {
     console.log("setupInteraction called");
 
     $(".draggable").draggable({
@@ -311,9 +308,12 @@ function setupInteraction() {
         }
     });
 
+
+    console.log("drop-hover-" + $.cookie('color'));
+
     $(".droppable").droppable({
         accept: ".draggable",
-        hoverClass: "drop-hover",
+        hoverClass: "drop-hover-" + $.cookie('color'),
         drop: function(event, ui) {
             var sourceTile = $(ui.draggable).attr("data-source");
             var targetTile = $(this).attr("data-target");
@@ -327,55 +327,41 @@ function setupInteraction() {
             processMove(color, sourceTile, targetTile);
         }
     });
+
+    return data;
 }
 
 function showStats(data) {
     console.log("showStats called");
     
     if(showWelcome) {
-        $("#my_popup").popup('show');
+        $("#welcomePopup").popup('show');
         showWelcome = false;
     }
+
+    updateScore(data.score);
 
     $("#Overlay").hide(0);
 };  
 
+
+function showInstructions(data) {
+    console.log('showInstructions called');
+
+    $('#Instructions').html(data.instructions);
+
+    return data;
+}
+
+
 function firstTimeGreeting(name, color) {
-    var txt = "Hello anonymous person, I shall call you " + name + " (it is much more personal, don't you think?)<br><br>You will play for the " + color + " team.<br><br>If you wish to play in a network, or for a different team, or on multiple devices, then you will have to login. If not, just start playing ...";
+    var txt = "<h3>Welcome to Random Acts Of Tic Tac Toe</h3><p>I don't think I have seen you before... I shall call you <b>" + name + "</b> and you will play for the <font style='color:" + color + ";'><b>" + color + "</b></font> team.<p></p>If you want a different name, remember your score, to be able to play across devices, or if you want to play for a specific color, then you will have to login.</p>";
     return txt;
 }
 
-function returnAnonGreeting(name, color, score) {
+function returnGreeting(name, color, score) {
     var txt = "Welcome back " + name + " (remember that I gave you a name when you first stopped by?).<br><br>You are still playing for the " + color + " team.<br><br>You have " + score + " points!<br><br>You can still login if you want more control.";
     return txt;
-}
-
-
-function setupSideBar() {
-    var settingsSidebar = new $.slidebars();
-    settingsSidebar.slidebars.close();
-
-    $("#ToggleSlidebar").click(function() {
-        if(settingsSidebar.slidebars.active('right')) {
-            settingsSidebar.slidebars.close();  
-        } else {
-            settingsSidebar.slidebars.open('right');
-        }
-    });
-}
-
-
-function setupHelpPopup() {
-    $('#my_popup').popup({
-        opacity: 0.3,
-        transition: 'all 0.3s'
-        });         
-}
-
-
-function showHelpPopup(txt) {
-    $('#HelpText').html(txt);
-    $('#my_popup').popus('show');
 }
 
 
@@ -387,3 +373,10 @@ function setupTiles() {
     }
 }
 
+
+function updateScore(score) {
+    $('#ScoreNumber').numerator({
+        duration: 500,
+        delimiter: ',',
+        toValue: score});
+}

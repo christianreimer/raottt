@@ -22,10 +22,16 @@
 }
 
 #Board {
+	position: relative;
+	float: left;
+    width: 100%;
+	height: 100%;
+}
+
+#Sized {
 	position: absolute;
-	top: 50px;
-    width: 500px;
-    height: 500px;
+    width: 600px;
+    height: 600px;
 }
 
 .tile {
@@ -63,8 +69,12 @@
 .droppable {
 }
 
-.drop-hover {
-	border: 1px solid Black;
+.drop-hover-Blue {
+	background-color: LightBlue;	
+}
+
+.drop-hover-Red {
+	background-color: Pink;	
 }
 
 .padding {
@@ -87,14 +97,8 @@
 .occupied {
 }
 
-#Score {
-	height: 50px;
-	float: left;
-	font-family: Verdana;
-	font-size: 28px;
-}
 
-#my_popup {
+#welcomePopup {
 	background-color: White;
 	border: 1px solid Black;
 	font-family: Verdana;
@@ -102,4 +106,31 @@
 	line-height: 18px;
 	padding: 20px;
 	margin: 20px;
+	width: 500px;
+}
+
+#Instructions {
+	font-family: Arial;
+	font-size: 14px;
+	line-height: 16px;
+	padding: 10px;
+	margin-left: 25px;
+	margin-right: 25px;
+}
+
+#ScoreFrame {
+	background-color: #999;
+	font-family: Arial;
+	font-size: 12px;
+	line-height: 16px;
+	padding: 10px;
+	margin-left: 25px;
+	margin-right: 25px;
+}
+
+#ScoreNumber {
+	font-size: 20px;
+	font-weight: bold;
+	text-align: right;
+	color: white;
 }

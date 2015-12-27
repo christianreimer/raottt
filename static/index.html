@@ -10,12 +10,10 @@
 	<script src="vendor/jquery.ui.touch-punch.js"></script>
 	<script src="vendor/jquery.rest.min.js"></script>
 	<script src="vendor/jquery.cookie.js"></script>
-	<script src="vendor/slidebars.min.js"></script>
 	<script src="vendor/jquery.popupoverlay.js"></script>
+	<script src="vendor/jquery-numerator.js"></script>
 	<script src="src/raottt.js"></script>
 
-	<link rel="stylesheet" href="vendor/font-awesome-4.2.0/css/font-awesome.min.css">
-	<link rel="stylesheet" href="vendor/slidebars.min.css">
 	<link rel="stylesheet" href="css/raottt.css">
 
 	<script>
@@ -27,28 +25,26 @@
 </head>
 <body>
 
-<div id="sb-site">
-	<div id="ToggleSlidebar" class="fa fa-arrow-circle-o-left right fa-3x padding"></div>
-	<div id="ShowHelp" class="fa fa-question-circle fa-3x right padding my_popup_open"></div>
-	<div id="Score" class="padding">Score: <span id="ScoreNumber">0</span></div>
-
-	<div id="Board" class="board">
-		<div id="Overlay" class="ui-widget-content overlay"></div>
+<div id="Sized">
+	<div>
+		<span class='left'>
+			<div id="Instructions"></div>
+		</span>
+		<span id="ScoreFrame" class='right'>
+			<div id="Score">Score</div>
+			<div id="ScoreNumber"></div>
+		</span>
 	</div>
 
-	<div id="my_popup">
-		<div id="HelpText">Text Goes Here</div>
-		<div>
-			<button class="my_popup_close right">Lets Play!</button>
-			<button class="left">Login First</button>
-		</div>
-	</div>
-
-	<div class="sb-slidebar sb-style-overlay sb-right sb-momentum-scrolling">
-		<div class="fa fa-arrow-circle-o-right fa-inverse fa-3x padding"></div>
-	</div>
-
+	<div id="Board" class="board"></div>
 </div>
+
+<div id="welcomePopup">
+	<div id="HelpText"></div>
+	<button style="font-size:16px;" class="welcomePopup_close right">I got it, let's just play!</button>
+	<button style="font-size:16px; margin-right: 10px" class="right">Login</button>
+</div>
+
 
 </body>
 </html>

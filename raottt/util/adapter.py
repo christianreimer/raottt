@@ -19,5 +19,5 @@ def enrich_message(game):
     for i, square in enumerate(square_lst):
         square['movable'] = i in avail_sources
     to_client['board'] = square_lst
-
+    to_client['instructions'] = 'Click on an empty square to add a red piece'
     return to_client
