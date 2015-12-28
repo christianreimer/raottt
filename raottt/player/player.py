@@ -5,18 +5,24 @@ The HumanPlayer reads commands from stdin.
 The ComputerPlayer uses a basic min/max algo to select the next move.
 """
 
+import uuid
+
+import names
+import timydb
+
 from ..util import Color
 from ..game import opponent
-import names
-import uuid
 
 
 class Bench(object):
     """Implements the player bench which is used to track all know players"""
     def __init__(self):
+        # self.db = tinydb.TinyDB('bench.db')
         self.players = {}
 
     def __getitem__(self, upid):
+        query = tinydb.Query()
+        # return db.search(query.upid == upid)
         return self.players.get(upid, None)
 
     def register(self, player):

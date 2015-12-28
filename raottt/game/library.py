@@ -3,6 +3,7 @@ Game Library
 """
 
 
+#  import tinydb
 import random
 
 from ..game import opponent
@@ -10,14 +11,17 @@ from ..util import Color
 from ..game.game import Game
 
 
+
 class Library(object):
     """Stores all the live games and adds new games as needed."""
+
     def __init__(self, min_choices=3, verbose=False):
         """Initialize the factory"""
         self.min_choices = min_choices
         self.verbose = verbose
         self.available_games = {}
         self.in_play = {}
+        # self.db = tinydb.TinyDB('library.json') 
 
     def load(self, data):
         """Load pre-created game data - used for testing"""
@@ -37,6 +41,12 @@ class Library(object):
         possible_games = [g.ugid for g in self.available_games.values() if
                           g.next_color == color and
                           player.upid not in g.teams[opp_color]]
+
+        # tf = lambda x, y: y not in x
+        # query = tinydb.Query()
+
+        # possible_games = self.db.search(query.teams.test(tf, player.upid) &
+        #                                 (query.next_color == color))
 
         if self.verbose:
             print('Player %s had %s possible games' % (

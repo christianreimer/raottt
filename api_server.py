@@ -123,8 +123,10 @@ class Player(Resource):
     def get(self, uid):
         """Return the user's stats"""
         player = bench[uid]
-        return res_wrap(json.dumps({'name': player.name,
-                                    'color': player.color}))
+        return res_wrap(json.dumps({'token': player.upid,
+                                    'name': player.name,
+                                    'color': player.color,
+                                    'score': player.score}))
 
     def post(self):
         """Create a new user"""
@@ -135,7 +137,8 @@ class Player(Resource):
         print("* I will use id {}".format(player.upid))
         return res_wrap(json.dumps({'token': player.upid,
                                     'name': player.name,
-                                    'color': player.color}))
+                                    'color': player.color,
+                                    'score': 0}))
 
 
 api.add_resource(Game, '/game/', '/game/<string:uid>/')

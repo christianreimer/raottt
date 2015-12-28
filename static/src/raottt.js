@@ -4,8 +4,6 @@ var gameId = undefined;
 var sizes = undefined;
 var playerColor = undefined;
 var showWelcome = false;
-var score = 0;
-var setupDone = false;
 
 
 function raottt() {
@@ -43,29 +41,30 @@ function getUserToken() {
     var deferred = $.Deferred();
 
     var token = $.cookie('token');
+
     if(token) {
+        // Returning user
         var request = restClient.player.read(token);
+
         request.done(function(data) {
-            $.cookie('name', data.name);
-            $.cookie('color', data.color);
-            $('#HelpText').html(returnGreeting(
-                $.cookie('name'), $.cookie('color'), data.score));
             userToken = data.token;
-            score = data.score;
-            updateScore(score);
+            playerColor = data.color;
+
+            $('#WelcomeText').html(returnGreeting(data.name, data.color, data.score));
+            updateScore(data.score);            
             deferred.resolve(data.token);
         });
     } else {
+        // New user
         var request = restClient.player.create();
+
         request.done(function(data){
-            $.cookie('token', data.token);
-            $.cookie('name', data.name);
-            $.cookie('color', data.color);
-            $('#HelpText').html(firstTimeGreeting(
-                $.cookie('name'), $.cookie('color')));
             userToken = data.token;
-            score = 0;
-            updateScore(score);
+            playerColor = data.color;
+
+            $('#WelcomeText').html(firstTimeGreeting(data.name, data.color));
+            updateScore(data.score);
+            $.cookie('token', data.token);
             deferred.resolve(data.token);
         });
     }
@@ -82,8 +81,7 @@ function getGame(token) {
     // }
 
     if(!token) {
-        console.log("Why are we getting here????")
-        token = $.cookie('token');
+        alert("Why are we getting here???");
     }
 
     var request = restClient.game.read(token);
@@ -91,6 +89,8 @@ function getGame(token) {
         // $.cookie('game', data.token);
         gameId = data.ugid;
         playerColor = data.nextPlayer;
+
+        console.log('getGame returned %o', data);
         deferred.resolve(data);
     });
 
@@ -142,9 +142,8 @@ function resetBoard(token) {
         layoutBoard).pipe(
             addPieces).pipe(
                 scalePieces).pipe(
-                    showInstructions).pipe(
-                        setupInteraction).pipe(
-                            showStats);
+                    setupInteraction).pipe(
+                        showStats);
 }
 
 
@@ -209,6 +208,7 @@ function scalePiece(piece) {
     piece.css("border-radius", sizes.radius);    
 }
 
+
 function scalePieces(data) {
     console.log("scalePieces called");
     $(".piece").each(function(i) {
@@ -260,11 +260,11 @@ function calculatePosition(i) {
 
 
 function processMove(color, source, target) {
- $('#Overlay').show();
+    $('#Overlay').show();
 
     console.log(color + " moved from " + source + " to " + target);
 
-    var obj = {token: $.cookie('token'),  // userToken,
+    var obj = {token: userToken,
                gameId: gameId,
                color: color,
                source: source,
@@ -309,11 +309,9 @@ function setupInteraction(data) {
     });
 
 
-    console.log("drop-hover-" + $.cookie('color'));
-
     $(".droppable").droppable({
         accept: ".draggable",
-        hoverClass: "drop-hover-" + $.cookie('color'),
+        hoverClass: "drop-hover-" + playerColor,
         drop: function(event, ui) {
             var sourceTile = $(ui.draggable).attr("data-source");
             var targetTile = $(this).attr("data-target");
@@ -340,12 +338,13 @@ function showStats(data) {
     }
 
     updateScore(data.score);
+    updateInstructions(data);
 
     $("#Overlay").hide(0);
 };  
 
 
-function showInstructions(data) {
+function updateInstructions(data) {
     console.log('showInstructions called');
 
     $('#Instructions').html(data.instructions);

@@ -41,7 +41,7 @@ def run_game(player1, player2, max_rounds, show=True):
         if game.game_over():
             break
 
-        player = player_toggle.__next__()
+        player = player_toggle.next()
         game.make_move(player)
         game.validate()
 

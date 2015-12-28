@@ -2,7 +2,7 @@
 Implements the modified Tic Tac Toe game.
 
 Keeps track of the current board state as well as the history of the game,
-specifically the set of users that have previousely plaed this game, and the
+specifically the set of users that have previousely played this game, and the
 change in board value.
 """
 
@@ -40,7 +40,7 @@ class Game(object):
         game = cls(data['nextPlayer'])
         game.ugid = data['ugid']
         game.board = Board.load(data['board'])
-        game.teams = data['teams']
+        game.teams = set(data['teams'])
         return game
 
     def dump(self):
@@ -49,7 +49,7 @@ class Game(object):
         pos_moves = self.board.available_moves(self.next_color)
 
         return {'board': squares,
-                'teams': self.teams,
+                'teams': list(self.teams),
                 'nextPlayer': self.next_color,
                 'ugid': self.ugid,
                 'offBoard': sum([1 for (s, _) in pos_moves if s < 0]) > 0}
