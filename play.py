@@ -35,7 +35,7 @@ def run_game(player1, player2, max_rounds, show=True):
     player_toggle = toggle(player1, player2)
     if show:
         game.show()
-        print()
+        print('')
 
     for _ in range(max_rounds):
         if game.game_over():
@@ -50,7 +50,7 @@ def run_game(player1, player2, max_rounds, show=True):
 
         if show:
             game.show()
-            print()
+            print('')
 
     return game
 
@@ -65,17 +65,18 @@ def main():
                   'valid options are Human or Computer'.format(args[arg]))
             return
 
-    blue = HumanPlayer('Blue', opponent) if args['--blue'] == 'Human' else \
-           ComputerPlayer('Blue', opponent)
+    state = {'color': 'Blue'}
+    blue = HumanPlayer(state) if args['--blue'] == 'Human' else \
+           ComputerPlayer(state)
 
-    red = HumanPlayer('Red', opponent) if args['--red'] == 'Human' else \
-          ComputerPlayer('Red', opponent)
+    state = {'color': 'Red'}
+    red = HumanPlayer(state) if args['--red'] == 'Human' else \
+          ComputerPlayer(state)
 
 
     for _ in range(int(args["--games"])):
         game = run_game(blue, red, 999999, args['--show'])
-        print(Color.me(game.game_over(), '{} wins in {} moves!!!'.format(
-            game.game_over(), game.score_tracker['num_moves'])))
+        print(Color.me(game.game_over(), '{} wins!!!'.format(game.game_over())))
 
 
 if __name__ == '__main__':

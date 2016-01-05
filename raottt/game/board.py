@@ -49,11 +49,11 @@ class Square(object):
         self.empty = color is None
 
     @classmethod
-    def load(cls, data):
+    def loadd(cls, data):
         """Loads the sqare state from a python dict"""
         return cls(data['color'], data['count'])
 
-    def dump(self):
+    def dumpd(self):
         """Dumps the square state as a python dict"""
         return {'color': self.color, 'count': self.count}
 
@@ -75,14 +75,14 @@ class Board(object):
         self.undo_chain = []
 
     @classmethod
-    def load(cls, data):
+    def loadd(cls, data):
         """Loads the game state from a python dict"""
-        game = cls([Square.load(s) for s in data])
+        game = cls([Square.loadd(s) for s in data])
         return game
 
-    def dump(self):
+    def dumpd(self):
         """Dumps the game state as a python list"""
-        return [s.dump() for s in self.squares]
+        return [s.dumpd() for s in self.squares]
 
     def show(self):
         """Prints the board to stdout"""

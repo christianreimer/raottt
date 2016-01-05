@@ -10,6 +10,18 @@ As an added twist, each piece can only remain in the same spot for 5 rounds.
 Once the time is up the player is forces to move that piece. This ensure a
 player does not occupy the center spot for the entire game, and adds another
 dimension for the player to consider.
-
-Author: Christian Reimer - creimer@mudbox.org
 """
+
+__author__ = "Christian Reimer"
+__version__ = "0.0.1"
+
+
+import pymongo
+
+from game import game
+import player
+
+
+def DatabaseConnection(collection='raottt'):
+	return pymongo.MongoClient()[collection]
+

@@ -3,19 +3,14 @@ REST (Swift App) player
 """
 
 
-from .player import Player
+from . import Player
 
 
 class RESTPlayer(Player):
-    """Implements a REST player
+    """Implementation of Player which gets moves moves from a REST Api"""
 
-    GET raott/game      returns a new game
-    PUT raott/move      submit a move
-    GET raott/player    returns a player's stats
-    """
-    def __init__(self, color, opponent, name=None, upid=None):
-        """Initializes the RESTPlayer"""
-        super(RESTPlayer, self).__init__(color, opponent, name, upid)
+    def __init__(self, state):
+        super(RESTPlayer, self).__init__(state)
         self.move = None
 
     def queue_move(self, move):
@@ -23,6 +18,6 @@ class RESTPlayer(Player):
         get_move"""
         self.move = move
 
-    def get_move(self, board):
+    def get_move(self, dummy):
         """Returns the move that was queued"""
         return self.move

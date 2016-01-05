@@ -3,7 +3,7 @@ Implments the rules to calculate how much to update the user's score by after
 a move.
 
 +1 for every move
-+1 if move improved the value of the board for your color
++2 if move improved the value of the board for your color
 +2 if you change from being behind to ahead
 +2 if a chain you helped with wins  (??)
 +5 if you make the winning move
@@ -12,7 +12,6 @@ a move.
 -1 if a chain you helped with looses
 -1 if you lower the value of the board
 -1 if you change from being ahead to behind
-
 
 The Game object should keep a tuple of the previous person to make a move
 (Player, Score, Ratio) then we can compare in the post_move_score_update if the
@@ -34,93 +33,153 @@ just won a game where you made the previous move .. Oh shame on you ..." or
 "Great News! BigGorillaMonkey just made the winning move for team Red in a
 game that you helped. He was standing on the shoulders of giants. Yours
 Shoulders (among others). Great stuff. Have +X points"
-
 """
 
 
 import math
+import json
+import collections
 
 from ..game import opponent
 
 
-def empty_score_tracker(ugid):
-    """blah"""
-    return {'teams': {'Red': {}, 'Blue': {}},
-            'previous': {'Red': [(0, 0, 0)], 'Blue': [(0, 0, 0)]},
-            'num_moves': 0,
-            'ugid': ugid}
+Move = collections.namedtuple('Move', 'pid score ratio')
+
+# +1 for every move
+# +1 if move improved the value of the board for your color
+# -1 if you lower the value of the board for your color
+# +2 if you change your color from being behind to ahead
+# -1 if you change your color from being ahead to behind
+# +5 if you make the winning move
+# -3 if you make the last move before the game is lost
 
 
-# pylint: disable=too-many-arguments
+VALUE_MOVE = 1
+VALUE_INCREASE_SCORE = 1
+VALUE_LOWER_SCORE = -1
+VALUE_BEHIND_TO_AHEAD = 2
+VALUE_AHEAD_TO_BEHIND = -1
+VALUE_WINNING_MOVE = 5
+VALUE_LOOSING_MOVE = -3
+FACTOR_WIN = 2
+FACTOR_LOSS = -1
 
-def post_move_score_update(tracker, new_score, new_ratio, winner, color, upid):
-    """blah"""
-    _, prev_score, _ = tracker['previous'][color][-1]
-    _, _, prev_ratio = tracker['previous'][opponent(color)][-1]
+class Score(object):
+    """docstring for Score"""
+    def __init__(self, state):
+        self.state = state
+        self.enqueue_work_f = None
 
-    # Record the fact that this upid participated in the game
-    tracker['teams'][color][upid] = tracker['teams'][color].get(upid, 0) + 1
-    tracker['previous'][color].append((upid, new_score, new_ratio))
-    tracker['num_moves'] += 1
+    @classmethod
+    def new(cls, gid):
+        state = {'gid': gid,
+                 'teams': {'Red': collections.defaultdict(int),
+                           'Blue': collections.defaultdict(int)},
+                 'previous': {'Red': Move(0, 0, 0.50),
+                              'Blue': Move(0, 0, 0.50)},
+                 'value': 0}
+        return cls(state)
 
-    # Calculate the score this player will get based on the rules:
-    # +1 for every move
-    # +1 if move improved the value of the board for your color
-    # -1 if you lower the value of the board for your color
-    # +2 if you change your color from being behind to ahead
-    # -1 if you change your color from being ahead to behind
-    # +3 if you make the winning move
-    score = 1
-    if new_score > prev_score:
-        score += 1
-    elif new_score < prev_score:
-        score -= 1
+    @classmethod
+    def loadd(cls, state):
+        """Load score state from a dict"""
+        return cls(state)
 
-    if prev_ratio < 0.50 and new_ratio > 0.50:
-        score += 2
-    elif prev_ratio > 0.50 and new_ratio < 0.50:
-        score -= 1
+    def dumpd(self):
+        """Dump score state as a dict"""
+        return self.state
 
-    if winner == color:
-        score += 3
+    @classmethod
+    def loads(cls, json_str):
+        """Load score state from a JSON string"""
+        return cls(json.loads(json_str))
 
-    return score, tracker
+    def dumps(self):
+        """Dump score state as a JSON string"""
+        return json.dumps(self.state)
 
+    @property
+    def gid(self):
+        return self.state['gid']
 
-def show_score(tracker):
-    """Prints the score to the console"""
-    print('Game: {}'.format(tracker['ugid']))
-    print('Num Moves: {}'.format(tracker['num_moves']))
-    print('Team Red:  {}'.format(tracker['teams']['Red']))
-    print('Team Blue: {}'.format(tracker['teams']['Blue']))
+    @property
+    def teams(self):
+        return self.state['teams']
 
+    @teams.setter
+    def teams(self, value):
+        self.state['teams'] = value
 
-def post_game_score_update(winning_color, tracker, bench):
-    """Updates scores as a result of a game being won. THe idea is that all the
-    player (upids) that participated in the game share in the glory (or shame).
-    The total value of the game is dependent on the number of moves that were
-    taken, and each player gets a part of the point proportionate to the number
-    of moves that player made."""
-    points = tracker['num_moves']
-    win_factor = 2
-    team_size = len(tracker['teams'][winning_color])
-    for upid, moves in tracker['teams'][winning_color].items():
-        player = bench[upid]
-        if not player:
-            print("ERROR: could not find for upid {}".format(upid))
-            continue
-        add_score(player, moves, win_factor, points, team_size)
+    @property
+    def previous(self):
+        return self.state['previous']
 
-    loss_factor = -1
-    team_size = len(tracker['teams'][opponent(winning_color)])
-    for upid, moves in tracker['teams'][opponent(winning_color)].items():
-        player = bench[upid]
-        if not player:
-            print("ERROR: could not find for upid {}".format(upid))
-            continue
-        add_score(player, moves, loss_factor, points, team_size)
+    @previous.setter
+    def previous(self, value):
+        self.state['previous'] = value
 
+    @property
+    def value(self):
+        return self.state['value']
 
-def add_score(player, moves, factor, points, team_size):
-    """Adds to the player's score."""
-    player.score += factor * math.ceil(points/team_size) * moves
+    @value.setter
+    def value(self, value):
+        self.state['value'] = value
+
+    def after_move(self, score, ratio, winner, color, pid):
+        """Update the score and state tracking after a move"""
+        prev_move = self.state['previous'][color]
+        
+        # Record the fact that this pid participated in the game
+        self.state['teams'][color][pid] += 1
+        self.state['previous'][color] = Move(pid, score, ratio)        
+
+        score_change = VALUE_MOVE
+
+        if score > prev_move.score:
+            score_change += VALUE_INCREASE_SCORE
+        elif score < prev_move.score:
+            score_change += VALUE_LOWER_SCORE
+
+        if prev_move.ratio < 0.50 and ratio > 0.50:
+            score_change += VALUE_BEHIND_TO_AHEAD
+        elif prev_move.ratio > 0.50 and ratio < 0.50:
+            score_change += VALUE_AHEAD_TO_BEHIND
+
+        if winner == color:
+            score_change += VALUE_WINNING_MOVE
+
+        self.state['value'] += abs(score_change)
+        return score_change
+
+    def __str__(self):
+        return '\n'.join(['Game: {}'.format(self.state['gid']),
+                          'Value: {}'.format(self.state['value']),
+                          'Team Red: {} players'.format(
+                                len(self.state['teams']['Red'])),
+                          'Team Blue: {} players'.format(
+                                len(self.state['teams']['Blue']))])
+
+    def post_game(self, winning_color, work_func):
+        """Updates scores as a result of a game being won.
+
+        The idea is that all the players (pids) that participated in the game
+        share in the glory (or shame) of the outcome. The total value of the
+        game is dependent on the moves that were taken, and each player gets a
+        part of the points proportionate to the number of moves that player
+        made."""
+
+        points = self.state['value']
+        work_lst = []
+
+        team_size = len(self.state['teams'][winning_color])
+        for pid, moves in self.state['teams'][winning_color].items():
+            score_change = FACTOR_WIN * math.ceil(points/team_size) * moves
+            work_lst.append((pid, score_change))
+
+        team_size = len(self.state['teams'][opponent(winning_color)])
+        for pid, moves in self.state['teams'][opponent(winning_color)].items():
+            score_change = FACTOR_LOSS * math.ceil(points/team_size) * moves
+            work_lst.append((pid, score_change))
+
+        return work_func(work_lst)

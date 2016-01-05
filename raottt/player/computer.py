@@ -4,8 +4,10 @@ Computer (MinMax AI) Player
 
 import random
 
-from .player import Player
 from ..game import INFINITY
+from ..game import opponent
+
+from . import Player
 
 
 class ComputerPlayer(Player):
@@ -14,9 +16,15 @@ class ComputerPlayer(Player):
 
     MAX_HORIZON = 4
 
-    def __init__(self, color, opponent, name=None, upid=None):
-        """Initialize a computer player"""
-        super(ComputerPlayer, self).__init__(color, opponent, name, upid)
+    def __init__(self, data=None):
+        super(ComputerPlayer, self).__init__(data)
+
+    def __str__(self):
+        return 'Computer {}'.format(super(ComputerPlayer, self).__str__())
+
+    @classmethod
+    def load(cls, player):
+        return cls(player.dumpd())
 
     def get_move(self, board):
         """Returns the next move selected by the computer player. Overrides
@@ -33,13 +41,13 @@ class ComputerPlayer(Player):
         winner = board.winner()
         if winner == color:
             return -1 * INFINITY + horizon
-        elif winner == self.opponent(color):
+        elif winner == opponent(color):
             return 1 * INFINITY - horizon
 
         best_value = INFINITY
         for (source, target) in board.available_moves(color):
             board.make_move(color, source, target)
-            value = self.maximize(board, self.opponent(color), horizon) - horizon
+            value = self.maximize(board, opponent(color), horizon) - horizon
             board.undo_last_move()
             if value < best_value:
                 best_value = value
@@ -55,14 +63,14 @@ class ComputerPlayer(Player):
         winner = board.winner()
         if winner == color:
             return INFINITY - horizon
-        elif winner == self.opponent(color):
+        elif winner == opponent(color):
             return -1 * (INFINITY + horizon)
         # Make sure that initial best_value is worse than the worst possible
         # move which would be to loose, and have a value on -(INFINITY+1)
         best_value = -1 * INFINITY
         for (source, target) in board.available_moves(color):
             board.make_move(color, source, target)
-            value = self.minimize(board, self.opponent(color), horizon) + horizon
+            value = self.minimize(board, opponent(color), horizon) + horizon
             board.undo_last_move()
             if value > best_value:
                 best_value = value
@@ -76,7 +84,7 @@ class ComputerPlayer(Player):
 
         for (source, target) in board.available_moves(color):
             board.make_move(color, source, target)
-            value = self.minimize(board, self.opponent(color), 0)
+            value = self.minimize(board, opponent(color), 0)
             board.undo_last_move()
             # print('%s -> %s has value %s' % (source, target, value))
             if value > best_value:
@@ -90,7 +98,7 @@ class ComputerPlayer(Player):
             print('Available Moves: %s' % board.available_moves(color))
             for (source, target) in board.available_moves(color):
                 board.make_move(color, source, target)
-                min_ = self.minimize(board, self.opponent(color), 1)
+                min_ = self.minimize(board, opponent(color), 1)
                 print('Minimize (%s, %s) -> %s' % (source, target, min_))
                 board.undo_last_move()
             assert False, "No move found for computer player"
