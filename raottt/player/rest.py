@@ -3,7 +3,7 @@ REST (Swift App) player
 """
 
 
-from . import Player
+from .player import Player
 
 
 class RESTPlayer(Player):

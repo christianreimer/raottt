@@ -7,7 +7,7 @@ import random
 from ..game import INFINITY
 from ..game import opponent
 
-from . import Player
+from .player import Player
 
 
 class ComputerPlayer(Player):

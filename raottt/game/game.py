@@ -8,6 +8,7 @@ change in board value.
 
 import uuid
 import random
+import logging
 
 from ..game import COLORS
 from ..game import opponent

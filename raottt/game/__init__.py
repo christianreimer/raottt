@@ -2,6 +2,9 @@
 Game module
 """
 
+from .. import DatabaseConnection
+MongoDb = DatabaseConnection()
+
 
 COLORS = ('Blue', 'Red')
 INFINITY = 999999

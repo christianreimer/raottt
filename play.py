@@ -10,10 +10,12 @@ Options:
     --blue=<b>      Blue player type (Human or Computer) [default: Computer]
     --red=<r>       Red plater type (Human or Computer) [default: Computer]
     --games=<n>     Number of games to play [default: 1]
-    --show          Show boards between games [default: false]
+    --show          Show boards between turns [default: false]
 """
 
 from docopt import docopt
+
+import raottt
 from raottt.game import opponent
 from raottt.game.game import Game
 from raottt.player.computer import ComputerPlayer

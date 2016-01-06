@@ -2,7 +2,7 @@
 Human (console) player
 """
 
-from . import Player
+from .player import Player
 
 
 class HumanPlayer(Player):
