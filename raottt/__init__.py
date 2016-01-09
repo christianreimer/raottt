@@ -25,7 +25,7 @@ from util import logger
 logger.setup()
 
 from util.database import DatabaseConnection
-
 from game.game import Game
-
+from game.score import Score
 from player.player import Player
+

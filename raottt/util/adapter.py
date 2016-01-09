@@ -7,7 +7,7 @@ layout things on the client side.
 
 def enrich_message(game):
     """Enriches the game json dump for the UI"""
-    dump = game.dump()
+    dump = game.dumpjs()
 
     to_client = {}
     to_client['offBoard'] = dump['offBoard']

@@ -35,5 +35,7 @@ class HumanPlayer(Player):
                     board.available_moves(self.color)))
                 continue
 
+            logging.debug('Player:{} moved {}'.format(
+                self.pid, (source, target)))
             return (source, target)
 

@@ -36,11 +36,15 @@ Shoulders (among others). Great stuff. Have +X points"
 """
 
 
-import math
-import json
 import collections
+import json
+import logging
+import math
 
 from ..game import opponent
+
+from .. import DatabaseConnection
+MongoDb = DatabaseConnection()
 
 
 Move = collections.namedtuple('Move', 'pid score ratio')
@@ -128,10 +132,13 @@ class Score(object):
 
     def after_move(self, score, ratio, winner, color, pid):
         """Update the score and state tracking after a move"""
-        prev_move = self.state['previous'][color]
-        
+        a, b, c = self.state['previous'][color]
+        prev_move = Move(a, b, c)
+
         # Record the fact that this pid participated in the game
-        self.state['teams'][color][pid] += 1
+        print('Type={}'.format(self.state['teams'][color]))
+        self.state['teams'][color][pid] = \
+            self.state['teams'][color].get(pid, 0) + 1
         self.state['previous'][color] = Move(pid, score, ratio)        
 
         score_change = VALUE_MOVE
@@ -160,7 +167,7 @@ class Score(object):
                           'Team Blue: {} players'.format(
                                 len(self.state['teams']['Blue']))])
 
-    def post_game(self, winning_color, work_func):
+    def post_game(self, winning_color, update_db=True):
         """Updates scores as a result of a game being won.
 
         The idea is that all the players (pids) that participated in the game
@@ -170,16 +177,32 @@ class Score(object):
         made."""
 
         points = self.state['value']
-        work_lst = []
+        score_lst = []
 
         team_size = len(self.state['teams'][winning_color])
         for pid, moves in self.state['teams'][winning_color].items():
             score_change = FACTOR_WIN * math.ceil(points/team_size) * moves
-            work_lst.append((pid, score_change))
+            score_lst.append((pid, score_change))
 
         team_size = len(self.state['teams'][opponent(winning_color)])
         for pid, moves in self.state['teams'][opponent(winning_color)].items():
             score_change = FACTOR_LOSS * math.ceil(points/team_size) * moves
-            work_lst.append((pid, score_change))
+            score_lst.append((pid, score_change))
 
-        return work_func(work_lst)
+        logging.debug('Score post_game result {}'.format(score_lst))
+
+        if update_db:
+            MongoDb.updates.insert_many(
+                [{'pid': p, 'delta': d} for (p, d) in score_lst])
+
+        return score_lst
+
+    @classmethod
+    def check_for_score_upate(cls, pid):
+        """Check if there are score updates waiting to be applied
+        for this player"""
+        delta = sum([r['delta'] for r in MongoDb.updates.find({'pid': pid})]) 
+        MongoDb.updates.delete_many({'pid': pid})
+        logging.info('Player {} had a score change of {} waiting'.format(
+            pid, delta))
+        return delta

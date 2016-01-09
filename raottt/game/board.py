@@ -4,10 +4,10 @@ Implements the modified the Tic Tac Toe board.
 The primary differeneces from classic Tic Tac Toe are:
 1. The pieces are know as Blue and Red instead of X and O
 2. Each player only gets 3 pieces and will have to move an existing piece on
-   their fourth move.
+   their fourth move onward
 3. The pieces only get to stay in the same position for 5 rounds, after that
    the piece has to be moved. This is done to prevent a user from grabbing the
-   center square and keeping it the entire game.
+   center square and keeping it the entire game
 
 The boad is indexed from 0 to 8 and users -1 to indicate a piece that has not
 yet been placed on the board.

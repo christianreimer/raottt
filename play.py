@@ -67,13 +67,11 @@ def main():
                   'valid options are Human or Computer'.format(args[arg]))
             return
 
-    state = {'color': 'Blue'}
     blue = HumanPlayer(state) if args['--blue'] == 'Human' else \
-           ComputerPlayer(state)
+           ComputerPlayer.new('Blue')
 
-    state = {'color': 'Red'}
     red = HumanPlayer(state) if args['--red'] == 'Human' else \
-          ComputerPlayer(state)
+          ComputerPlayer.new('Red')
 
 
     for _ in range(int(args["--games"])):

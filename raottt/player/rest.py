@@ -1,5 +1,5 @@
 """
-REST (Swift App) player
+REST player
 """
 
 
@@ -12,6 +12,9 @@ class RESTPlayer(Player):
     def __init__(self, state):
         super(RESTPlayer, self).__init__(state)
         self.move = None
+
+    def __str__(self):
+        return 'REST {}'.format(super(RESTPlayer, self).__str__())
 
     def queue_move(self, move):
         """Set the move in the user so that if can be pulled out again using

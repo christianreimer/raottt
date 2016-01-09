@@ -8,141 +8,139 @@ REST Api server built on flask.
 # pylint: disable=F0401
 
 import json
+import logging
 
-from flask import Flask
-from flask import request
-from flask import make_response
+import flask
 from flask.ext.restful import Resource
 from flask.ext.restful import Api
 
-from raottt.game import opponent
-from raottt.game.library import Library
-from raottt.player.player import Bench
+from raottt import Game
+from raottt import Player
+from raottt import Score
 from raottt.player.rest import RESTPlayer
 from raottt.player.computer import ComputerPlayer
 from raottt.util import adapter
 
 
-library = Library(verbose=True)
-# library.load(json.loads(open('games.json').read()))
-bench = Bench()
-spok = ComputerPlayer('Blue', opponent, name='Spok')
-bench.register(spok)
-app = Flask(__name__, static_url_path='')
+spok = ComputerPlayer.new('Blue')
+spok.save()
+
+app = flask.Flask(__name__, static_url_path='')
 api = Api(app)
 
 
 def oh_no():
     """Create an Oh No! response"""
     msg = {'displayMsg': True,
-           'message': ("On No!<br><br>Looks like something went wrong, please "
-                       "try to reload ...")}
+           'message': ("<p>On No!</p>"
+                       "<p>Looks like something went wrong, please reload ...")}
     return json.dumps(msg)
 
 
-def res_wrap(data):
-    """Return a respons"""
-    print('\n%s\n' % (50 * '='))
-    return make_response(data)
+class API_Game(Resource):
+    """Game API endpoint"""
 
-
-class Game(Resource):
-    """Interacts with the game library
-
-    GET /game/id will return a new game that can be played by the user with id
-    PUT /game/id will apply a move to the given game
-    """
     def get(self, uid):
-        """doc string"""
-        player = bench[uid]
+        """Return a game that can be played by the player with pid"""
+        logging.debug('API_Game.get {}'.format(uid))
+  
+        player = RESTPlayer(Player.load(uid).dumpd())
         if not player:
-            print('ERROR: got request for unknown player: {}'.format(uid))
-            return res_wrap(oh_no())
+            logging.error('API_Game get for unknown pid {}'.format(uid))
+            return flask.make_response(oh_no())
+        
+        # Apply any score change that results from other people moves
+        score_change = Score.check_for_score_upate(player.pid)
+        if score_change:
+            player.score += score_change
+            player.save()
 
-        game = library.checkout(player)
+        game = Game.pick(player)
         if not game:
-            print('ERROR: could not find game for player: {}'.format(uid))
-            return res_wrap(oh_no())
+            logging.error('Unable to pick a game for player {}'.format(uid))
+            return flask.make_response(oh_no())
 
-        return res_wrap(json.dumps(adapter.enrich_message(game)))
+        return flask.make_response(json.dumps(adapter.enrich_message(game)))
 
     def put(self, uid):
-        """doc string"""
-        # print(request.form)
-        try:
-            token = request.form['token']
-            source = int(request.form['source'])
-            target = int(request.form['target'])
-        except (KeyError, ValueError):
-            return res_wrap(oh_no())
+        """Apply a move to the specified game"""
+        logging.debug('API_Game.put: {}'.format(flask.request.form))
 
-        player = bench[token]
+        try:
+            pid = flask.request.form['token']
+            source = int(flask.request.form['source'])
+            target = int(flask.request.form['target'])
+        except (KeyError, ValueError):
+            return flask.make_response(oh_no())
+
+        player = RESTPlayer(Player.load(pid).dumpd())
         if not player:
-            print('ERROR: player {} not found!'.format(token))
-            return res_wrap(oh_no())
+            logging.error('API_Game put from unknown pid {}'.format(pid))
+            return flask.make_response(oh_no())
+
+        player.score += Score.check_for_score_upate(player.pid)
 
         player.queue_move((source, target))
-        game = library.get_game(uid, token)
+        game = Game.load(uid)
         if not game:
-            print('ERROR: game uid {} player {} not found'.format(uid, player))
-            return res_wrap(oh_no())
+            logging.error('API_Game put for unknown gid {} from pid {}'.format(
+                gid, pid))
+            return flask.make_response(oh_no())
 
         game.make_move(player)
-        print("After my move")
-        game.show()
-
+        game.save()
+        player.save()
+        
         if game.game_over():
-            game.cleanup(bench)
-            library.remove_game(game)
-            return res_wrap(json.dumps({'displayMsg': True,
+            _ = game.cleanup()
+            return flask.make_response(json.dumps({'displayMsg': True,
                                         'message': 'You Won!',
                                         'score': player.score}))
-
         game.make_move(spok)
-        print("After Spock's move")
-        game.show()
+        game.inplay = False
+        game.save()
+
         if game.game_over():
-            game.cleanup(bench)
-            library.remove_game(game)
-            return res_wrap(json.dumps({'displayMsg': True,
+            _ = game.cleanup()
+            return flask.make_response(json.dumps({'displayMsg': True,
                                         'message': 'You Loose :(',
                                         'score': player.score}))
 
-        library.return_game(game)
-        return res_wrap(json.dumps({'displayMsg': False,
+        return flask.make_response(json.dumps({'displayMsg': False,
                                     'message': 'Move Processed',
                                     'score': player.score}))
 
 
-class Player(Resource):
-    """Track stats for users
+class API_Player(Resource):
+    """Player API endpoint"""
 
-    GET  /player/puid will return the stats for the given player
-    POST /player/ will create a new player
-    """
     def get(self, uid):
-        """Return the user's stats"""
-        player = bench[uid]
-        return res_wrap(json.dumps({'token': player.upid,
+        """Return the user specified by uid"""
+        player = Player.load(uid)
+
+        # Apply any score change that results from other people moves
+        score_change = Score.check_for_score_upate(player.pid)
+        if score_change:
+            player.score += score_change
+            player.save()
+
+        return flask.make_response(json.dumps({'token': player.pid,
                                     'name': player.name,
                                     'color': player.color,
                                     'score': player.score}))
 
     def post(self):
         """Create a new user"""
-        player = RESTPlayer('Red', opponent)
-        bench.register(player)
-        print("***** NEW USER CREATED *****")
-        print("* I shall call you {}".format(player.name))
-        print("* I will use id {}".format(player.upid))
-        return res_wrap(json.dumps({'token': player.upid,
+        player = RESTPlayer.new('Red')
+        player.save()
+        return flask.make_response(json.dumps({'token': player.pid,
                                     'name': player.name,
                                     'color': player.color,
-                                    'score': 0}))
+                                    'score': player.score}))
 
 
-api.add_resource(Game, '/game/', '/game/<string:uid>/')
-api.add_resource(Player, '/player/', '/player/<string:uid>/')
+api.add_resource(API_Game, '/game/', '/game/<string:uid>/')
+api.add_resource(API_Player, '/player/', '/player/<string:uid>/')
 
 
 @app.route('/')
@@ -152,5 +150,5 @@ def root():
 
 if __name__ == '__main__':
     # app.run(host='0.0.0.0', port=8888, debug=True)
-    app.run()  # port=8888, debug=True)
+    app.run(debug=True)  # port=8888, debug=True)
 

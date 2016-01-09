@@ -30,7 +30,7 @@ class Game(object):
         self.inplay = inplay
 
     def __str__(self):
-        return '{} next:{} inplay:{}'.format(
+        return 'Game:{} next:{} inplay:{}'.format(
             self.gid, self.next_color, self.inplay)
 
     @classmethod
@@ -40,30 +40,44 @@ class Game(object):
         next_color = first_player
         board = Board()
         score = Score.new(gid)
-        return cls(gid, next_color, board, score, False)
+        game = cls(gid, next_color, board, score, False)
+        logging.debug('New {}'.format(game))
+        return game
 
     @classmethod
     def load(cls, gid):
         """Load the game with specified id from the database"""
-        return cls.loadd(MongoDb.game.find_one({'gid': gid}))
+        game = cls.loadd(MongoDb.game.find_one({'gid': gid}))
+        logging.debug('Loaded {}'.format(game))
+        return game
 
     def save(self):
         """Save game state to database"""
         MongoDb.game.update_one({'gid': self.gid},
                                 {'$set': self.dumpd()}, upsert=True)
+        logging.debug('Saved {}'.format(self.__str__()))
+
+    def delete(self):
+        """Delete game from database"""
+        MongoDb.game.delete_one({'gid': self.gid})
+        logging.debug('Deleted {}'.format(self.__str__()))
 
     @classmethod
-    def pick(cls, pid):
+    def pick(cls, player):
         """Picks an existing game that can be played by the specified player.
         If no suitable game is found, a new one will be created and returned."""
-        gid_lst = [record['gid'] for record in MongoDb.game.find({'next_color': pid.color})]
+        gid_lst = [record['gid'] for record in \
+            MongoDb.game.find({'next_color': player.color})]
 
         if len(gid_lst) < 5:
-            gid_lst += create_new_games(5 - len(gid_lst), pid.color)
+            logging.debug('Only {} games can be picked for color {}'.format(
+                len(gid_lst), player.color))
+            gid_lst += create_new_games(5 - len(gid_lst), player.color)
 
         gid = random.choice(gid_lst)
         game = cls.load(gid)
         game.inplay = True
+        logging.debug('Picked {} for pid {}'.format(game, player.pid))
         return game
 
     @classmethod
@@ -87,12 +101,12 @@ class Game(object):
     def dumpjs(self):
         """Return game state as dict suitable for js"""
         # TODO: Move to adapter
-        quares = self.board.dump()
+        squares = self.board.dumpd()
         pos_moves = self.board.available_moves(self.next_color)
 
         return {'board': squares,
                 'nextPlayer': self.next_color,
-                'ugid': self.ugid,
+                'ugid': self.gid,
                 'offBoard': sum([1 for (s, _) in pos_moves if s < 0]) > 0}
    
     def make_move(self, player):
@@ -115,9 +129,11 @@ class Game(object):
         self.board.age(opp_color)
         self.next_color = opp_color
 
-    def cleanup(self, bench):
+    def cleanup(self):
         """Called after a game has been won"""
-        self.score.post_game(self.next_color, lambda x: x)
+        logging.debug('Game.cleanup {}'.format(self.gid))
+        _ = self.score.post_game(self.next_color)
+        self.delete()
 
     def show(self):
         """Prints the board (in pretty colorized ASCII :-) to stdout."""
@@ -168,6 +184,5 @@ def create_new_games(num_games, color):
         game = Game.new(color)
         game.save()
         game_lst.append(game.gid)
-    print('Created {} new games to be picked by {}'.format(num_games, color))
     return game_lst
 

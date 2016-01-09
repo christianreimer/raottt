@@ -7,7 +7,7 @@ var showWelcome = false;
 
 
 function raottt() {
-    $.removeCookie('token');
+    // $.removeCookie('token');
     showWelcome = true;
 
     // Overlay is used to blank out the board while getting a new game
@@ -39,7 +39,6 @@ function getUserToken() {
     console.log("getUserToken called")
 
     var deferred = $.Deferred();
-
     var token = $.cookie('token');
 
     if(token) {
@@ -359,7 +358,7 @@ function firstTimeGreeting(name, color) {
 }
 
 function returnGreeting(name, color, score) {
-    var txt = "Welcome back " + name + " (remember that I gave you a name when you first stopped by?).<br><br>You are still playing for the " + color + " team.<br><br>You have " + score + " points!<br><br>You can still login if you want more control.";
+    var txt = "Welcome back " + name + " (remember that I gave you a name when you first stopped by?).</p><p>You are still playing for the <font style='color:" + color + ";'><b>" + color + "</b></font> team. You have <b>" + score + "</b> points (way to go!)</p><p>You can still login if you want more control.</p>";
     return txt;
 }
 

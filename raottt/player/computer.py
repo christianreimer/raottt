@@ -2,6 +2,7 @@
 Computer (MinMax AI) Player
 """
 
+import logging
 import random
 
 from ..game import INFINITY
@@ -23,13 +24,22 @@ class ComputerPlayer(Player):
         return 'Computer {}'.format(super(ComputerPlayer, self).__str__())
 
     @classmethod
+    def new(cls, color):
+        """Create new ComputerPlayer"""
+        player = cls({'color': color})
+        logging.debug('New {}'.format(player))
+        return player
+
+    @classmethod
     def load(cls, player):
         return cls(player.dumpd())
 
     def get_move(self, board):
         """Returns the next move selected by the computer player. Overrides
         get_move in the Player class."""
-        return self.calculate_move(board, self.color)
+        move = self.calculate_move(board, self.color)
+        logging.debug('Player:{} moved {}'.format(self.pid, move))
+        return move
 
     def minimize(self, board, color, horizon):
         """Selects the move that will minimize the value for the specified
