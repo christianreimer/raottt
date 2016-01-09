@@ -6,28 +6,27 @@ from .player import Player
 
 
 class HumanPlayer(Player):
-    """Implementation of Player which reads moves form stdin and prints to
-    stdout"""
-    def __init__(self, color, opponent, name=None, upid=None):
-        super(HumanPlayer, self).__init__(color, opponent, name, upid)
+    """Implementation of Player which reads moves moves from stdin"""
+
+    def __init__(self, data=None):
+        super(HumanPlayer, self).__init__(data)
+
+    @classmethod
+    def load(cls, player):
+        return cls(player.dumpd())
 
     def __str__(self):
-        """Return string representation of the player"""
-        return 'Human: %s' % super(HumanPlayer, self).__str__()
-
-    def dump(self):
-        """Dumps the Player state as a python dict"""
-        return {'kind': 'Human'}.update(super(HumanPlayer, self).dump())
+        return 'Human {}'.format(super(HumanPlayer, self).__str__())
 
     def get_move(self, board):
         """Returns the next move selected by the human player. Overrides
         get_move in the Player class."""
 
         while True:
-            move = input("Move (source, target): ")
             try:
-                source = int(move.split()[0])
-                target = int(move.split()[1])
+                move = input("Move (source, target): ")
+                source = int(move[0])
+                target = int(move[1])
             except (ValueError, IndexError):
                 source = target = None
 
@@ -36,5 +35,7 @@ class HumanPlayer(Player):
                     board.available_moves(self.color)))
                 continue
 
+            logging.debug('Player:{} moved {}'.format(
+                self.pid, (source, target)))
             return (source, target)
 

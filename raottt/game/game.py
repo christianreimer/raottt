@@ -7,59 +7,114 @@ change in board value.
 """
 
 import uuid
+import random
+import logging
 
 from ..game import COLORS
 from ..game import opponent
 from ..util import Color
 from .board import Board
-from .score import empty_score_tracker
-from .score import post_move_score_update
-from .score import show_score
-from .score import post_game_score_update
+from .score import Score    
+
+from .. import DatabaseConnection
+MongoDb = DatabaseConnection()
 
 
 class Game(object):
     """Tracks the current state as well as the history of the game."""
-    def __init__(self, first_player):
-        self.ugid = uuid.uuid4().hex
-        self.board = None
-        self.teams = {k: set() for k in COLORS}
-        self.next_color = first_player
-        self.score_tracker = empty_score_tracker(self.ugid)
+    def __init__(self, gid, next_color, board, score, inplay):
+        self.gid = gid
+        self.next_color = next_color
+        self.board = board
+        self.score = score
+        self.inplay = inplay
+
+    def __str__(self):
+        return 'Game:{} next:{} inplay:{}'.format(
+            self.gid, self.next_color, self.inplay)
 
     @classmethod
     def new(cls, first_player):
-        """Returns a new game."""
-        game = cls(first_player)
-        game.board = Board()
+        """Create a new game"""
+        gid = uuid.uuid4().hex
+        next_color = first_player
+        board = Board()
+        score = Score.new(gid)
+        game = cls(gid, next_color, board, score, False)
+        logging.debug('New {}'.format(game))
         return game
 
     @classmethod
-    def load(cls, data):
-        """Restores (loads) a game from the given state expressed as a dict."""
-        game = cls(data['nextPlayer'])
-        game.ugid = data['ugid']
-        game.board = Board.load(data['board'])
-        game.teams = set(data['teams'])
+    def load(cls, gid):
+        """Load the game with specified id from the database"""
+        game = cls.loadd(MongoDb.game.find_one({'gid': gid}))
+        logging.debug('Loaded {}'.format(game))
         return game
 
-    def dump(self):
-        """Returns the game state as a dict."""
-        squares = self.board.dump()
+    def save(self):
+        """Save game state to database"""
+        MongoDb.game.update_one({'gid': self.gid},
+                                {'$set': self.dumpd()}, upsert=True)
+        logging.debug('Saved {}'.format(self.__str__()))
+
+    def delete(self):
+        """Delete game from database"""
+        MongoDb.game.delete_one({'gid': self.gid})
+        logging.debug('Deleted {}'.format(self.__str__()))
+
+    @classmethod
+    def pick(cls, player):
+        """Picks an existing game that can be played by the specified player.
+        If no suitable game is found, a new one will be created and returned."""
+        gid_lst = [record['gid'] for record in \
+            MongoDb.game.find({'next_color': player.color})]
+
+        if len(gid_lst) < 5:
+            logging.debug('Only {} games can be picked for color {}'.format(
+                len(gid_lst), player.color))
+            gid_lst += create_new_games(5 - len(gid_lst), player.color)
+
+        gid = random.choice(gid_lst)
+        game = cls.load(gid)
+        game.inplay = True
+        logging.debug('Picked {} for pid {}'.format(game, player.pid))
+        return game
+
+    @classmethod
+    def loadd(cls, state):
+        """Restore game state from a dict"""
+        gid = state['gid']
+        next_color = state['next_color']
+        board = Board.loadd(state['board'])
+        score = Score.loadd(state['score'])
+        inplay = state['inplay']
+        return cls(gid, next_color, board, score, inplay)
+
+    def dumpd(self):
+        """Dump game state as a dict"""
+        return {'gid': self.gid,
+                'next_color': self.next_color,
+                'board': self.board.dumpd(),
+                'score': self.score.dumpd(),
+                'inplay': self.inplay}
+
+    def dumpjs(self):
+        """Return game state as dict suitable for js"""
+        # TODO: Move to adapter
+        squares = self.board.dumpd()
         pos_moves = self.board.available_moves(self.next_color)
 
         return {'board': squares,
-                'teams': list(self.teams),
                 'nextPlayer': self.next_color,
-                'ugid': self.ugid,
+                'ugid': self.gid,
                 'offBoard': sum([1 for (s, _) in pos_moves if s < 0]) > 0}
-
+   
     def make_move(self, player):
-        """Obtains a move from the passed in player, and then applies that move
+        """Obtain a move from the passed in player, and then applies that move
         to the game."""
         color = player.color
         opp_color = opponent(player.color)
-        upid = player.upid
+        pid = player.pid
         assert color == self.next_color
 
         move = player.get_move(self.board)
@@ -68,29 +123,21 @@ class Game(object):
         score = self.board.value(color)
         ratio = self.board.value_ratio(color)
         winner = self.board.winner()
-
-        score, self.score_tracker = post_move_score_update(
-            self.score_tracker, score, ratio, winner, color, upid)
-
-        player.score += score
+        player.score += self.score.after_move(score, ratio, winner, color, pid)
 
         # Update teams to record this user has taken a turn for this color
-        self.teams[color].add(upid)
         self.board.age(opp_color)
         self.next_color = opp_color
 
-
-    def cleanup(self, bench):
+    def cleanup(self):
         """Called after a game has been won"""
-        post_game_score_update(
-            opponent(self.next_color), self.score_tracker, bench)
-
+        logging.debug('Game.cleanup {}'.format(self.gid))
+        _ = self.score.post_game(self.next_color)
+        self.delete()
 
     def show(self):
         """Prints the board (in pretty colorized ASCII :-) to stdout."""
-        print('Game: %s' % Color.yellow(self.ugid))
-        print('Moves Performed: %s' % Color.yellow(
-            self.score_tracker['num_moves']))
+        print('Game: %s' % Color.yellow(self.gid))
         print('Board Value: %s/%s' % (Color.blue(self.board.value('Blue')),
                                       Color.red(self.board.value('Red'))))
         print('Next Player: %s' % (Color.me(self.next_color,
@@ -106,7 +153,7 @@ class Game(object):
             Color.yellow(self.board.value_ratio(
                 opponent(self.next_color)))))
 
-        show_score(self.score_tracker)
+        print(self.score)
         self.board.show()
 
     def game_over(self):
@@ -120,10 +167,6 @@ class Game(object):
         pieces = len([p for p in self.board.squares if p.color])
         assert pieces <= 6
 
-        # If we have made 6 or more moves, then there must be 6 pieces
-        if self.score_tracker['num_moves'] >= 6:
-            assert pieces == 6
-
         # Check that all pieces have a count between 1 and 5
         pieces = len([p for p in self.board.squares if p.count < 1] +
                      [p for p in self.board.squares if p.count > 5])
@@ -133,7 +176,13 @@ class Game(object):
         pieces = len([p for p in self.board.squares if p.count == 1])
         assert pieces <= 1
 
-        # Make sure the same upid has not played both sides
-        players = set(self.teams['Red']).intersection(
-            set(self.teams['Blue']))
-        assert not players
+
+def create_new_games(num_games, color):
+    """Create `num_games` new games that `color` can play"""
+    game_lst = []
+    for _ in range(num_games):
+        game = Game.new(color)
+        game.save()
+        game_lst.append(game.gid)
+    return game_lst
+

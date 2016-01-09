@@ -4,10 +4,10 @@ Implements the modified the Tic Tac Toe board.
 The primary differeneces from classic Tic Tac Toe are:
 1. The pieces are know as Blue and Red instead of X and O
 2. Each player only gets 3 pieces and will have to move an existing piece on
-   their fourth move.
+   their fourth move onward
 3. The pieces only get to stay in the same position for 5 rounds, after that
    the piece has to be moved. This is done to prevent a user from grabbing the
-   center square and keeping it the entire game.
+   center square and keeping it the entire game
 
 The boad is indexed from 0 to 8 and users -1 to indicate a piece that has not
 yet been placed on the board.
@@ -49,11 +49,11 @@ class Square(object):
         self.empty = color is None
 
     @classmethod
-    def load(cls, data):
+    def loadd(cls, data):
         """Loads the sqare state from a python dict"""
         return cls(data['color'], data['count'])
 
-    def dump(self):
+    def dumpd(self):
         """Dumps the square state as a python dict"""
         return {'color': self.color, 'count': self.count}
 
@@ -75,14 +75,14 @@ class Board(object):
         self.undo_chain = []
 
     @classmethod
-    def load(cls, data):
+    def loadd(cls, data):
         """Loads the game state from a python dict"""
-        game = cls([Square.load(s) for s in data])
+        game = cls([Square.loadd(s) for s in data])
         return game
 
-    def dump(self):
+    def dumpd(self):
         """Dumps the game state as a python list"""
-        return [s.dump() for s in self.squares]
+        return [s.dumpd() for s in self.squares]
 
     def show(self):
         """Prints the board to stdout"""

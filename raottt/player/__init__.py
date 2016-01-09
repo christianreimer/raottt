@@ -2,6 +2,5 @@
 Player Module
 """
 
-pass
-
-
+from .. import DatabaseConnection
+MongoDb = DatabaseConnection()

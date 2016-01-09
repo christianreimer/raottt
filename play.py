@@ -10,10 +10,12 @@ Options:
     --blue=<b>      Blue player type (Human or Computer) [default: Computer]
     --red=<r>       Red plater type (Human or Computer) [default: Computer]
     --games=<n>     Number of games to play [default: 1]
-    --show          Show boards between games [default: false]
+    --show          Show boards between turns [default: false]
 """
 
 from docopt import docopt
+
+import raottt
 from raottt.game import opponent
 from raottt.game.game import Game
 from raottt.player.computer import ComputerPlayer
@@ -35,7 +37,7 @@ def run_game(player1, player2, max_rounds, show=True):
     player_toggle = toggle(player1, player2)
     if show:
         game.show()
-        print()
+        print('')
 
     for _ in range(max_rounds):
         if game.game_over():
@@ -50,7 +52,7 @@ def run_game(player1, player2, max_rounds, show=True):
 
         if show:
             game.show()
-            print()
+            print('')
 
     return game
 
@@ -65,17 +67,16 @@ def main():
                   'valid options are Human or Computer'.format(args[arg]))
             return
 
-    blue = HumanPlayer('Blue', opponent) if args['--blue'] == 'Human' else \
-           ComputerPlayer('Blue', opponent)
+    blue = HumanPlayer(state) if args['--blue'] == 'Human' else \
+           ComputerPlayer.new('Blue')
 
-    red = HumanPlayer('Red', opponent) if args['--red'] == 'Human' else \
-          ComputerPlayer('Red', opponent)
+    red = HumanPlayer(state) if args['--red'] == 'Human' else \
+          ComputerPlayer.new('Red')
 
 
     for _ in range(int(args["--games"])):
         game = run_game(blue, red, 999999, args['--show'])
-        print(Color.me(game.game_over(), '{} wins in {} moves!!!'.format(
-            game.game_over(), game.score_tracker['num_moves'])))
+        print(Color.me(game.game_over(), '{} wins!!!'.format(game.game_over())))
 
 
 if __name__ == '__main__':
