@@ -65,8 +65,8 @@ VALUE_BEHIND_TO_AHEAD = 2
 VALUE_AHEAD_TO_BEHIND = -1
 VALUE_WINNING_MOVE = 5
 VALUE_LOOSING_MOVE = -3
-FACTOR_WIN = 2
-FACTOR_LOSS = -1
+FACTOR_WIN = 1
+FACTOR_LOSS = -0.5
 
 class Score(object):
     """docstring for Score"""
