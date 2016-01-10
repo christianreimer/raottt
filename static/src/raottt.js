@@ -7,7 +7,7 @@ var showWelcome = false;
 
 
 function raottt() {
-    // $.removeCookie('token');
+    $.removeCookie('token');
     showWelcome = true;
 
     // Overlay is used to blank out the board while getting a new game
@@ -28,8 +28,9 @@ function raottt() {
 
 
 function setupRestInterface() {
-    // restClient = new $.RestClient('http://127.0.0.1:5000/');
-    restClient = new $.RestClient('http://192.168.0.100:8888/');
+    restClient = new $.RestClient('http://127.0.0.1:8888/');
+    // restClient = new $.RestClient('http://192.168.0.100:8888/');
+    // restClient = new $.RestClient('http://66.108.32.139:8888/');
     restClient.add('game');
     restClient.add('player');
 }
@@ -99,12 +100,13 @@ function getGame(token) {
 
 function calculateSizeFactors(wWidth, wHeight)
 {
-    wHeight -= 50;
+    var heightOffset = 10;
+    wHeight -= heightOffset;
     var windowSize = wWidth < wHeight ? wWidth : wHeight;
 
     // Everything is based of the tilesize. For consistency, we want it
     // to be an even number.
-    var tileSize = Math.floor(windowSize / 3.2);
+    var tileSize = Math.floor(windowSize / 3.1);
     tileSize = tileSize % 2 ? tileSize - 1 : tileSize;
 
     // console.log("wHeight:" + wHeight + 
@@ -113,8 +115,9 @@ function calculateSizeFactors(wWidth, wHeight)
 
     s = {};
     s.tile = tileSize;
+    s.heightOffset = heightOffset;
     s.font = Math.floor(tileSize * 0.75);
-    s.padding = Math.floor(tileSize / 40);
+    s.padding = Math.floor(tileSize / 50);
     s.padding = s.padding % 2 ? s.padding + 1 : s.padding;
     s.board = 4 * s.padding + 3 * s.tile;
     s.offset = wWidth / 2 - s.board / 2;
@@ -124,10 +127,11 @@ function calculateSizeFactors(wWidth, wHeight)
 
 function positionBoard(sizes) {
     $("#Board").css("left", sizes.offset);
+    $("#Board").css("top", sizes.heightOffset);
     $("#Board").css("width", sizes.board);
 
-    $("#Stats").css("left", sizes.offset);
-    $("#Stats").css("width", sizes.board);
+    // $("#Stats").css("left", sizes.offset);
+    // $("#Stats").css("width", sizes.board);
 };
 
 
@@ -346,7 +350,7 @@ function showStats(data) {
 function updateInstructions(data) {
     console.log('showInstructions called');
 
-    $('#Instructions').html(data.instructions);
+    $('#Instructions').html('<p>' + data.instructions + '</p>');
 
     return data;
 }

@@ -3,9 +3,14 @@
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-	<title>RAOTTT</title>
+	<title>raottt</title>
 
-	<script src="vendor/jquery-1.11.2.min.js"></script>
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css">
+	<link rel="stylesheet" href="css/raottt.css">
+
+	<script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+	<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+	<!-- <script src="vendor/jquery-1.11.2.min.js"></script> -->
 	<script src="vendor/jquery-ui.js"></script>
 	<script src="vendor/jquery.ui.touch-punch.js"></script>
 	<script src="vendor/jquery.rest.min.js"></script>
@@ -14,8 +19,6 @@
 	<script src="vendor/jquery-numerator.js"></script>
 	<script src="src/raottt.js"></script>
 
-	<link rel="stylesheet" href="css/raottt.css">
-
 	<script>
 		$(function() {
 			raottt();
@@ -23,28 +26,37 @@
     </script>
 
 </head>
+
 <body>
 
-<div id="Sized">
-	<div>
-		<span class='left'>
-			<div id="Instructions"></div>
-		</span>
-		<span id="ScoreFrame" class='right'>
-			<div id="Score">Score</div>
-			<div id="ScoreNumber"></div>
-		</span>
-	</div>
+	<div id='Sized'>
+		<div id='ScoreBox'>
+			<span id="Score">Score</span>
+			<span id="ScoreNumber">0</span>
+		</div>
 
-	<div id="Board" class="board"></div>
-</div>
+		<div id="Board" class="board"></div>
+	</div> 
+<!--				
+<a href="#" id='HelpBox' class="ui-btn ui-icon-info ui-btn-icon-left">Instructions</a>
+<div id='HelpBox'>?</div> 
+-->
+
+
 
 <div id="welcomePopup">
 	<div id="WelcomeText"></div>
-	<button style="font-size:16px;" class="welcomePopup_close right">I got it, let's just play!</button>
-	<button style="font-size:16px; margin-right: 10px" class="right">Login</button>
+
+	<button style="font-size:16px; margin-right: 10px">
+		Login
+	</button>
+
+	<button style="font-size:16px;" class="welcomePopup_close">
+		I got it, let's just play!
+	</button>
+
 </div>
 
 
 </body>
-</html>
+</html>	
