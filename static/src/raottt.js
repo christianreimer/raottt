@@ -3,12 +3,10 @@ var userToken = undefined;
 var gameId = undefined;
 var sizes = undefined;
 var playerColor = undefined;
-var showWelcome = false;
 
 
 function raottt() {
-    $.removeCookie('token');
-    showWelcome = true;
+    // $.removeCookie('token');
 
     // Overlay is used to blank out the board while getting a new game
     // from the server
@@ -19,7 +17,8 @@ function raottt() {
 
     // To support many different screen sizes, everything is calculated based
     // on the window size.
-    sizes = calculateSizeFactors($('#Board').width(), $('#Board').height());
+    sizes = calculateSizeFactors(window.innerWidth, window.innerHeight);
+    // sizes = calculateSizeFactors($('#Board').width(), $('#Board').height());
 
     positionBoard(sizes);
 
@@ -50,8 +49,8 @@ function getUserToken() {
             userToken = data.token;
             playerColor = data.color;
 
-            $('#WelcomeText').html(returnGreeting(data.name, data.color, data.score));
-            updateScore(data.score);            
+            showPopup(returnGreeting(data.name, data.color, data.score));
+            updateScore(data);            
             deferred.resolve(data.token);
         });
     } else {
@@ -62,8 +61,8 @@ function getUserToken() {
             userToken = data.token;
             playerColor = data.color;
 
-            $('#WelcomeText').html(firstTimeGreeting(data.name, data.color));
-            updateScore(data.score);
+            showPopup(firstTimeGreeting(data.name, data.color));
+            updateScore(data);
             $.cookie('token', data.token);
             deferred.resolve(data.token);
         });
@@ -100,38 +99,40 @@ function getGame(token) {
 
 function calculateSizeFactors(wWidth, wHeight)
 {
-    var heightOffset = 10;
-    wHeight -= heightOffset;
+    console.log('wWidth:' + wWidth + ' wHeight:'+ wHeight);
+
+    var headerSize = 50;
+    var maxSize = 600;
+
+    wHeight -= headerSize;
+
+    // Use the smaller of height/width as the window size
     var windowSize = wWidth < wHeight ? wWidth : wHeight;
+    windowSize = windowSize > maxSize ? maxSize : windowSize;
 
     // Everything is based of the tilesize. For consistency, we want it
     // to be an even number.
-    var tileSize = Math.floor(windowSize / 3.1);
+    var tileSize = Math.floor(windowSize / 3.2);
     tileSize = tileSize % 2 ? tileSize - 1 : tileSize;
 
-    // console.log("wHeight:" + wHeight + 
-    //          " wWidth:" + wWidth +
-    //          " tileSize:" + tileSize);
+    console.log("wHeight:" + wHeight + " wWidth:" + wWidth + " tileSize:" + tileSize);
 
     s = {};
     s.tile = tileSize;
-    s.heightOffset = heightOffset;
     s.font = Math.floor(tileSize * 0.75);
     s.padding = Math.floor(tileSize / 50);
     s.padding = s.padding % 2 ? s.padding + 1 : s.padding;
-    s.board = 4 * s.padding + 3 * s.tile;
+    s.boardSize = 4 * s.padding + 3 * s.tile;
     s.offset = wWidth / 2 - s.board / 2;
     s.radius = Math.floor(tileSize / 15);
     return s;
 };
 
 function positionBoard(sizes) {
-    $("#Board").css("left", sizes.offset);
-    $("#Board").css("top", sizes.heightOffset);
-    $("#Board").css("width", sizes.board);
-
-    // $("#Stats").css("left", sizes.offset);
-    // $("#Stats").css("width", sizes.board);
+        $("#Container").css("width", sizes.boardSize);
+        $('#Board').css('width', sizes.boardSize);
+        $('#Board').css('height', sizes.boardSize);
+        $('#Board').css('top', 100);
 };
 
 
@@ -146,7 +147,7 @@ function resetBoard(token) {
             addPieces).pipe(
                 scalePieces).pipe(
                     setupInteraction).pipe(
-                        showStats);
+                        updateScore);
 }
 
 
@@ -280,7 +281,7 @@ function processMove(color, source, target) {
         
         $.removeCookie('game');
 
-        updateScore(data.score);
+        updateScore(data);
         
         // Remove all the droppable and click handlers before re-constructing
         // the board
@@ -332,37 +333,38 @@ function setupInteraction(data) {
     return data;
 }
 
-function showStats(data) {
-    console.log("showStats called");
-    
-    if(showWelcome) {
-        $("#welcomePopup").popup('show');
-        showWelcome = false;
-    }
 
-    updateScore(data.score);
-    updateInstructions(data);
+function showPopup(data) {
+    console.log("showPopup called");
 
+    $("#WelcomeText").html(data);
+    $("#welcomePopup").popup('show');
     $("#Overlay").hide(0);
-};  
-
-
-function updateInstructions(data) {
-    console.log('showInstructions called');
-
-    $('#Instructions').html('<p>' + data.instructions + '</p>');
-
-    return data;
 }
 
 
 function firstTimeGreeting(name, color) {
-    var txt = "<h3>Welcome to Random Acts Of Tic Tac Toe</h3><p>I don't think I have seen you before... I shall call you <b>" + name + "</b> and you will play for the <font style='color:" + color + ";'><b>" + color + "</b></font> team.<p></p>If you want a different name, remember your score, to be able to play across devices, or if you want to play for a specific color, then you will have to login.</p>";
+    var txt = "<h3>Welcome to Random Acts Of Tic Tac Toe</h3>" +
+              "<p>I don't think I have seen you before... I shall call you " + 
+              "<b>" + name + "</b> and you will play for the " + 
+              "<font style='color:" + color + ";'><b>" + color + "</b></font> team.</p>" +
+              "<p>If you want a different name, to be able to play across devices, " + 
+              "or if you want to play for a specific color, then you will have to login " +
+              "by clicking on the twitter icon.</p>" +
+              "<p>You can click the <font style='color:green;'><b>?</b></font> " +
+              "at any time for instructions.</p>";
     return txt;
 }
 
 function returnGreeting(name, color, score) {
-    var txt = "Welcome back " + name + " (remember that I gave you a name when you first stopped by?).</p><p>You are still playing for the <font style='color:" + color + ";'><b>" + color + "</b></font> team. You have <b>" + score + "</b> points (way to go!)</p><p>You can still login if you want more control.</p>";
+    var txt = "Welcome back " + name + " (remember that I gave you a name when " +
+              "you first stopped by?).</p>" + 
+              "<p>You are still playing for the " + 
+              "<font style='color:" + color + ";'><b>" + color + "</b></font> team. " + 
+              "You have <b>" + score + "</b> points (way to go!)</p>" + 
+              "<p>You can still login if you want more control, and remember that " + 
+              "you can click the <font style='color:green;'><b>?</b></font> " +
+              "at any time for instructions.</p>";
     return txt;
 }
 
@@ -376,9 +378,9 @@ function setupTiles() {
 }
 
 
-function updateScore(score) {
+function updateScore(data) {
     $('#ScoreNumber').numerator({
         duration: 500,
         delimiter: ',',
-        toValue: score});
+        toValue: data.score});
 }

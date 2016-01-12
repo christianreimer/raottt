@@ -66,7 +66,7 @@ VALUE_AHEAD_TO_BEHIND = -1
 VALUE_WINNING_MOVE = 5
 VALUE_LOOSING_MOVE = -3
 FACTOR_WIN = 1
-FACTOR_LOSS = -0.5
+FACTOR_LOSS = -0.75
 
 class Score(object):
     """docstring for Score"""
@@ -136,7 +136,6 @@ class Score(object):
         prev_move = Move(a, b, c)
 
         # Record the fact that this pid participated in the game
-        print('Type={}'.format(self.state['teams'][color]))
         self.state['teams'][color][pid] = \
             self.state['teams'][color].get(pid, 0) + 1
         self.state['previous'][color] = Move(pid, score, ratio)        
@@ -153,10 +152,14 @@ class Score(object):
         elif prev_move.ratio > 0.50 and ratio < 0.50:
             score_change += VALUE_AHEAD_TO_BEHIND
 
-        if winner == color:
-            score_change += VALUE_WINNING_MOVE
-
         self.state['value'] += abs(score_change)
+
+        if winner == color:
+            one_third_of_value = math.ceil(1/3 * self.state['value'])
+            score_change += max(one_third_of_value, VALUE_WINNING_MOVE)
+            self.state['value'] -= score_change
+        
+        logging.debug('Score after_move change {}'.format(score_change))
         return score_change
 
     def __str__(self):

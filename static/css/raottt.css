@@ -1,11 +1,86 @@
+html, body {
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	/*background-color: black;*/
+}
 
-.stats {
-	position: absolute;
-	top: 0;
-	left: 0;
-	border: 1px solid Green;
-	height: 100px;
-	font-family: Verdana;
+#Board {
+	width: inherit;
+	height: inherit;
+	float: left;	
+}
+
+#Container {
+	position: relative;
+	width: inherit;
+	height: inherit;
+	margin: 0;
+	padding: 0;
+	padding-top: 5px;
+	top: 60px;
+}
+
+#Header {
+	position: relative;
+	top: -55px;
+	width: inherit;
+	height: 50px;
+	margin-left: auto;
+	padding-right: auto;
+	margin-bottom: 5px;
+	float: left;
+}
+
+#Score {
+	width: 95px;
+	height: 50px;
+	float: right;
+	border-radius: 3px;
+	background-color: orange;
+
+	padding-right: 5px;
+	text-align: right;
+	font-family: Arial;
+}
+
+#ScoreText {
+	font-size: 16px;
+	margin-top: 3px;
+	color: black;
+	text-shadow: none;
+}
+
+#ScoreNumber {
+	font-size: 22px;
+	font-weight: bold;
+	color: white;
+}
+
+#Instructions {
+	width: 50px;
+	height: 40px;
+	float: right;
+	border-radius: 3px;
+	background-color: green;	
+	margin-right: 5px;		
+
+	font-family: Arial;
+	font-size: 24px;
+	font-weight: bold;
+	text-align: center;
+	color: white;
+	padding-top:10px;
+}
+
+#Login {
+	width: 100px;
+	height: 35px;
+	float: left;
+	border-radius: 3px;
+	padding-top: 5px;
+	padding-left: 5px;
 }
 
 .overlay {
@@ -21,32 +96,10 @@
     z-index: 99;
 }
 
-#Board {
-	position: relative;
-	float: left;
-    width: 100%;
-	height: 100%;
-	
-}
-
-#Sized {
-    width: 600px;
-    height: 600px;
-    margin: 0;
-    padding: 0;
-}
-
-
 .tile {
     position: absolute;
     border: 1px dashed LightGray;
     z-index: 1;
-}
-
-.benchTile {
-	position: absolute;
-	z-index: 1;
-	border: 1px solid Yellow;
 }
 
 .piece {
@@ -80,26 +133,6 @@
 	background-color: Pink;	
 }
 
-.padding {
-	padding: 5px;
-}
-
-.right {
-	float: right;
-}
-
-.left {
-	float: left;
-}
-
-.occupied {
-}
-
-.orange {
-	background-color: orange;
-}
-
-
 #welcomePopup {
 	background-color: White;
 	border: 1px solid Black;
@@ -109,56 +142,4 @@
 	padding: 20px;
 	margin: 20px;
 	width: 400px;
-	border-radius: 3px;
 }
-
-#HeaderBox {
-	position: relative;
-	background-color: green;
-	width: 100%;
-	height: 20px;
-}
-
-#Instructions {
-	position: relative;
-	font-family: Arial;
-	font-size: 16px;
-	line-height: 20px;
-	top: 580px;
-}
-
-#ScoreBox {
-	position: relative;
-	height: 55px;
-	width: 75px;
-	float: right;
-	border-radius: 3px;
-	margin-right: 10px;
-
-	text-align: right;
-	background-color: orange;
-	font-family: Arial;
-
-	padding: 5px;
-	padding-left: 10px;
-	padding-right: 10px;
-}
-
-#Score {
-	color: #333;
-	font-size: 16px;
-	/* line-height: 18px; */
-}
-
-#ScoreNumber {
-	font-size: 24px;
-	font-weight: bold;
-	color: white;
-}
-
-#HelpBox {
-	position: relative;
-	top: -50px;	
-}
-
-

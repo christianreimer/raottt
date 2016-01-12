@@ -5,12 +5,9 @@
 
 	<title>raottt</title>
 
-	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css">
 	<link rel="stylesheet" href="css/raottt.css">
 
-	<script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
-	<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
-	<!-- <script src="vendor/jquery-1.11.2.min.js"></script> -->
+	<script src="vendor/jquery-1.11.2.min.js"></script>
 	<script src="vendor/jquery-ui.js"></script>
 	<script src="vendor/jquery.ui.touch-punch.js"></script>
 	<script src="vendor/jquery.rest.min.js"></script>
@@ -29,34 +26,30 @@
 
 <body>
 
-	<div id='Sized'>
-		<div id='ScoreBox'>
-			<span id="Score">Score</span>
-			<span id="ScoreNumber">0</span>
+	<div id="Container">
+		<div id="Header">
+			<a href=#><div id="Score">
+				<div id="ScoreText">Score</div>
+				<div id="ScoreNumber">1,234</div>
+			</div></a>
+			<a href=# onClick='showPopup("hello");'><div id="Instructions">?</div></a>
+			<a href=#>
+				<div id="Login">
+					<img height="40" width="40" src="twit.png"/>
+				</div>
+			</a>
 		</div>
+		
+	    <div id="Board" class="Board"></div>
+	    
+    </div>
 
-		<div id="Board" class="board"></div>
-	</div> 
-<!--				
-<a href="#" id='HelpBox' class="ui-btn ui-icon-info ui-btn-icon-left">Instructions</a>
-<div id='HelpBox'>?</div> 
--->
-
-
-
-<div id="welcomePopup">
-	<div id="WelcomeText"></div>
-
-	<button style="font-size:16px; margin-right: 10px">
-		Login
-	</button>
-
-	<button style="font-size:16px;" class="welcomePopup_close">
-		I got it, let's just play!
-	</button>
-
-</div>
-
+	<div id="welcomePopup">
+		<div id="WelcomeText"></div>
+		<button style="font-size:18px; width:100%;" class="welcomePopup_close">
+			I got it, let's play!
+		</button>
+	</div>
 
 </body>
 </html>	

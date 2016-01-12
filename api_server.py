@@ -64,7 +64,7 @@ class API_Game(Resource):
 
     def put(self, uid):
         """Apply a move to the specified game"""
-        logging.debug('API_Game.put: {}'.format(flask.request.form))
+        logging.debug('API_Game.put {}'.format(flask.request.form))
 
         try:
             pid = flask.request.form['token']
@@ -94,7 +94,7 @@ class API_Game(Resource):
         if game.game_over():
             _ = game.cleanup()
             return flask.make_response(json.dumps({'displayMsg': True,
-                                        'message': 'You Won!',
+                                        'message': 'Nice Move!',
                                         'score': player.score}))
         game.make_move(spok)
         game.inplay = False
@@ -103,7 +103,7 @@ class API_Game(Resource):
         if game.game_over():
             _ = game.cleanup()
             return flask.make_response(json.dumps({'displayMsg': True,
-                                        'message': 'You Loose :(',
+                                        'message': 'That did not go as well...',
                                         'score': player.score}))
 
         return flask.make_response(json.dumps({'displayMsg': False,
