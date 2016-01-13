@@ -1,11 +1,86 @@
+html, body {
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	/*background-color: black;*/
+}
 
-.stats {
-	position: absolute;
-	top: 0;
-	left: 0;
-	border: 1px solid Green;
-	height: 100px;
-	font-family: Verdana;
+#Board {
+	width: inherit;
+	height: inherit;
+	float: left;	
+}
+
+#Container {
+	position: relative;
+	width: inherit;
+	height: inherit;
+	margin: 0;
+	padding: 0;
+	padding-top: 5px;
+	top: 60px;
+}
+
+#Header {
+	position: relative;
+	top: -55px;
+	width: inherit;
+	height: 50px;
+	margin-left: auto;
+	padding-right: auto;
+	margin-bottom: 5px;
+	float: left;
+}
+
+#Score {
+	width: 95px;
+	height: 50px;
+	float: right;
+	border-radius: 3px;
+	background-color: orange;
+
+	padding-right: 5px;
+	text-align: right;
+	font-family: Arial;
+}
+
+#ScoreText {
+	font-size: 16px;
+	margin-top: 3px;
+	color: black;
+	text-shadow: none;
+}
+
+#ScoreNumber {
+	font-size: 22px;
+	font-weight: bold;
+	color: white;
+}
+
+#Instructions {
+	width: 50px;
+	height: 40px;
+	float: right;
+	border-radius: 3px;
+	background-color: green;	
+	margin-right: 5px;		
+
+	font-family: Arial;
+	font-size: 24px;
+	font-weight: bold;
+	text-align: center;
+	color: white;
+	padding-top:10px;
+}
+
+#Login {
+	width: 100px;
+	height: 35px;
+	float: left;
+	border-radius: 3px;
+	padding-top: 5px;
+	padding-left: 5px;
 }
 
 .overlay {
@@ -21,29 +96,10 @@
     z-index: 99;
 }
 
-#Board {
-	position: relative;
-	float: left;
-    width: 100%;
-	height: 100%;
-}
-
-#Sized {
-	position: absolute;
-    width: 600px;
-    height: 600px;
-}
-
 .tile {
     position: absolute;
     border: 1px dashed LightGray;
     z-index: 1;
-}
-
-.benchTile {
-	position: absolute;
-	z-index: 1;
-	border: 1px solid Yellow;
 }
 
 .piece {
@@ -77,27 +133,6 @@
 	background-color: Pink;	
 }
 
-.padding {
-	padding: 5px;
-}
-
-.iconButton {
-	height: 50px;
-	float: right;
-}
-
-.right {
-	float: right;
-}
-
-.left {
-	float: left;
-}
-
-.occupied {
-}
-
-
 #welcomePopup {
 	background-color: White;
 	border: 1px solid Black;
@@ -106,31 +141,5 @@
 	line-height: 18px;
 	padding: 20px;
 	margin: 20px;
-	width: 500px;
-}
-
-#Instructions {
-	font-family: Arial;
-	font-size: 14px;
-	line-height: 16px;
-	padding: 10px;
-	margin-left: 25px;
-	margin-right: 25px;
-}
-
-#ScoreFrame {
-	background-color: #999;
-	font-family: Arial;
-	font-size: 12px;
-	line-height: 16px;
-	padding: 10px;
-	margin-left: 25px;
-	margin-right: 25px;
-}
-
-#ScoreNumber {
-	font-size: 20px;
-	font-weight: bold;
-	text-align: right;
-	color: white;
+	width: 400px;
 }

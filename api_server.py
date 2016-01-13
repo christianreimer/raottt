@@ -64,7 +64,7 @@ class API_Game(Resource):
 
     def put(self, uid):
         """Apply a move to the specified game"""
-        logging.debug('API_Game.put: {}'.format(flask.request.form))
+        logging.debug('API_Game.put {}'.format(flask.request.form))
 
         try:
             pid = flask.request.form['token']
@@ -92,23 +92,32 @@ class API_Game(Resource):
         player.save()
         
         if game.game_over():
-            _ = game.cleanup()
+            game.cleanup()
             return flask.make_response(json.dumps({'displayMsg': True,
-                                        'message': 'You Won!',
-                                        'score': player.score}))
+                                        'message': '<p>Nice Move!</p>',
+                                        'score': player.score,
+                                        'moves': player.moves_made,
+                                        'games': player.games_participated_in}))
+
         game.make_move(spok)
         game.inplay = False
         game.save()
 
         if game.game_over():
-            _ = game.cleanup()
+            game.cleanup()
             return flask.make_response(json.dumps({'displayMsg': True,
-                                        'message': 'You Loose :(',
-                                        'score': player.score}))
+                                        'message': '',
+                                        'score': player.score,
+                                        'moves': player.moves_made,
+                                        'games': player.games_participated_in}))
+
 
         return flask.make_response(json.dumps({'displayMsg': False,
-                                    'message': 'Move Processed',
-                                    'score': player.score}))
+                                    'message': '',
+                                    'score': player.score,
+                                    'moves': player.moves_made,
+                                    'games': player.games_participated_in}))
+
 
 
 class API_Player(Resource):
@@ -127,7 +136,9 @@ class API_Player(Resource):
         return flask.make_response(json.dumps({'token': player.pid,
                                     'name': player.name,
                                     'color': player.color,
-                                    'score': player.score}))
+                                    'score': player.score,
+                                    'moves': player.moves_made,
+                                    'games': player.games_participated_in}))
 
     def post(self):
         """Create a new user"""
@@ -136,7 +147,9 @@ class API_Player(Resource):
         return flask.make_response(json.dumps({'token': player.pid,
                                     'name': player.name,
                                     'color': player.color,
-                                    'score': player.score}))
+                                    'score': player.score,
+                                    'moves': player.moves_made,
+                                    'games': player.games_participated_in}))
 
 
 api.add_resource(API_Game, '/game/', '/game/<string:uid>/')
@@ -149,6 +162,6 @@ def root():
     return app.send_static_file('index.html')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True, port=8888) # , port=8888, debug=True)
-    # app.run(debug=True)  # port=8888, debug=True)
+    # app.run(host='0.0.0.0', debug=True, port=8888) # , port=8888, debug=True)
+    app.run(debug=True, port=8888)
 

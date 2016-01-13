@@ -3,7 +3,9 @@
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-	<title>RAOTTT</title>
+	<title>raottt</title>
+
+	<link rel="stylesheet" href="css/raottt.css">
 
 	<script src="vendor/jquery-1.11.2.min.js"></script>
 	<script src="vendor/jquery-ui.js"></script>
@@ -14,8 +16,6 @@
 	<script src="vendor/jquery-numerator.js"></script>
 	<script src="src/raottt.js"></script>
 
-	<link rel="stylesheet" href="css/raottt.css">
-
 	<script>
 		$(function() {
 			raottt();
@@ -23,28 +23,33 @@
     </script>
 
 </head>
+
 <body>
 
-<div id="Sized">
-	<div>
-		<span class='left'>
-			<div id="Instructions"></div>
-		</span>
-		<span id="ScoreFrame" class='right'>
-			<div id="Score">Score</div>
-			<div id="ScoreNumber"></div>
-		</span>
+	<div id="Container">
+		<div id="Header">
+			<a href=# onClick='showScore();'><div id="Score">
+				<div id="ScoreText">Score</div>
+				<div id="ScoreNumber">1,234</div>
+			</div></a>
+			<a href=#><div id="Instructions">?</div></a>
+			<a href=#>
+				<div id="Login">
+					<img height="40" width="40" src="twit.png"/>
+				</div>
+			</a>
+		</div>
+		
+	    <div id="Board" class="Board"></div>
+	    
+    </div>
+
+	<div id="welcomePopup">
+		<div id="WelcomeText"></div>
+		<button style="font-size:18px; width:100%;" class="welcomePopup_close">
+			I got it, let's play!
+		</button>
 	</div>
 
-	<div id="Board" class="board"></div>
-</div>
-
-<div id="welcomePopup">
-	<div id="WelcomeText"></div>
-	<button style="font-size:16px;" class="welcomePopup_close right">I got it, let's just play!</button>
-	<button style="font-size:16px; margin-right: 10px" class="right">Login</button>
-</div>
-
-
 </body>
-</html>
+</html>	
