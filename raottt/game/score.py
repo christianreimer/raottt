@@ -65,8 +65,8 @@ VALUE_BEHIND_TO_AHEAD = 2
 VALUE_AHEAD_TO_BEHIND = -1
 VALUE_WINNING_MOVE = 5
 VALUE_LOOSING_MOVE = -3
-FACTOR_WIN = 1
-FACTOR_LOSS = -0.75
+FACTOR_WIN = 2
+FACTOR_LOSS = -1
 
 class Score(object):
     """docstring for Score"""
@@ -138,7 +138,7 @@ class Score(object):
         # Record the fact that this pid participated in the game
         self.state['teams'][color][pid] = \
             self.state['teams'][color].get(pid, 0) + 1
-        self.state['previous'][color] = Move(pid, score, ratio)        
+        self.state['previous'][color] = Move(pid, score, ratio)
 
         score_change = VALUE_MOVE
 
@@ -192,13 +192,18 @@ class Score(object):
             score_change = FACTOR_LOSS * math.ceil(points/team_size) * moves
             score_lst.append((pid, score_change))
 
-        logging.debug('Score post_game result {}'.format(score_lst))
+        logging.debug('Score post_game result {}'.format(
+            [(p, d) for (p, d) in score_lst]))
 
         if update_db:
             MongoDb.updates.insert_many(
                 [{'pid': p, 'delta': d} for (p, d) in score_lst])
 
         return score_lst
+
+    def moves_made_by_player(self, player):
+        """Return the number of moves player has made in this game"""
+        return self.teams[player.color].get(player.pid, 0)
 
     @classmethod
     def check_for_score_upate(cls, pid):

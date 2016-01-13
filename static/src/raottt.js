@@ -3,7 +3,7 @@ var userToken = undefined;
 var gameId = undefined;
 var sizes = undefined;
 var playerColor = undefined;
-
+var playerData = undefined;
 
 function raottt() {
     // $.removeCookie('token');
@@ -50,7 +50,8 @@ function getUserToken() {
             playerColor = data.color;
 
             showPopup(returnGreeting(data.name, data.color, data.score));
-            updateScore(data);            
+            updateScore(data);      
+            playerData = data;      
             deferred.resolve(data.token);
         });
     } else {
@@ -63,6 +64,7 @@ function getUserToken() {
 
             showPopup(firstTimeGreeting(data.name, data.color));
             updateScore(data);
+            playerData = data;
             $.cookie('token', data.token);
             deferred.resolve(data.token);
         });
@@ -282,6 +284,11 @@ function processMove(color, source, target) {
         $.removeCookie('game');
 
         updateScore(data);
+        playerData = data;
+
+        if(data.message) {
+            showPopup(data.message);
+        }
         
         // Remove all the droppable and click handlers before re-constructing
         // the board
@@ -331,6 +338,14 @@ function setupInteraction(data) {
     });
 
     return data;
+}
+
+
+function showScore() {
+    var html = "<p>Your have scored " + playerData.score + " points<br>" +
+               "You have participated in " + playerData.games + " games <br>" +
+               "and made a total of " + playerData.moves + " moves</p>";
+    showPopup(html);
 }
 
 

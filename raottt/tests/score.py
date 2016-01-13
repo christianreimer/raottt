@@ -4,7 +4,7 @@ import math
 
 
 from ..game import score
-
+from ..player import player
 
 def create_empty_score_tracker(gid=None):
     gid = gid or uuid.uuid4().hex
@@ -122,4 +122,19 @@ def test_score_distribution_two_players_multiple_winners():
 
     work_map = dict(tracker.post_game('Red', lambda x: x))
     assert work_map[pid1] == 2 * work_map[pid2]
+
+
+def test_number_of_moves_made():
+    tracker = create_empty_score_tracker()
+    player1 = player.Player.new('Red')
+    player2 = player.Player.new('Blue')
+    player3 = player.Player.new('Red')
+
+    tracker.after_move(10, 0.50, None, player1.color, player1.pid)
+    tracker.after_move(10, 0.50, None, player2.color, player2.pid)
+    tracker.after_move(10, 0.50, None, player1.color, player1.pid)
+
+    assert tracker.moves_made_by_player(player1) == 2
+    assert tracker.moves_made_by_player(player2) == 1
+    assert tracker.moves_made_by_player(player3) == 0
 
