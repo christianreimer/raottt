@@ -42,21 +42,21 @@ class Player(object):
     def new(cls, color):
         """Create new player"""
         player = cls({'color': color})
-        logging.debug('Player created {}'.format(player))
+        logging.debug('Created {}'.format(player))
         return player
 
     @classmethod
     def load(cls, pid):
         """Load player state from database"""
         player = cls(MongoDb.player.find_one({'pid': pid}))
-        logging.debug('Player loaded {}'.format(player))
+        logging.debug('Loaded {}'.format(player))
         return player
 
     def save(self):
         """Save player state to database"""
         MongoDb.player.update_one({'pid': self.pid},
                                   {'$set': self.dumpd()}, upsert=True)
-        logging.debug('Player saved {}'.format(self.__str__()))
+        logging.debug('Saved {}'.format(self.__str__()))
 
     def dumpd(self):
         """Return state as a dict"""

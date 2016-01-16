@@ -69,9 +69,10 @@ class Game(object):
         gid_lst = [record['gid'] for record in \
             MongoDb.game.find({'next_color': player.color})]
 
+        logging.debug('{} can pick from {} possibilities'.format(
+            player.color, len(gid_lst)))
+
         if len(gid_lst) < 5:
-            logging.debug('Only {} games can be picked for color {}'.format(
-                len(gid_lst), player.color))
             gid_lst += create_new_games(5 - len(gid_lst), player.color)
 
         gid = random.choice(gid_lst)
@@ -123,7 +124,11 @@ class Game(object):
         score = self.board.value(color)
         ratio = self.board.value_ratio(color)
         winner = self.board.winner()
+
         player.score += self.score.after_move(score, ratio, winner, color, pid)
+        player.moves_made += 1
+        if self.score.moves_made_by_player(player) == 1:
+            player.games_participated_in += 1
 
         # Update teams to record this user has taken a turn for this color
         self.board.age(opp_color)
@@ -131,7 +136,7 @@ class Game(object):
 
     def cleanup(self):
         """Called after a game has been won"""
-        logging.debug('Game.cleanup {}'.format(self.gid))
+        logging.debug('Cleanup {}'.format(self.__str__()))
         _ = self.score.post_game(self.next_color)
         self.delete()
 

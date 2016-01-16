@@ -38,7 +38,7 @@ class ComputerPlayer(Player):
         """Returns the next move selected by the computer player. Overrides
         get_move in the Player class."""
         move = self.calculate_move(board, self.color)
-        logging.debug('Player:{} moved {}'.format(self.pid, move))
+        logging.debug('Player {} moved {}'.format(self.pid, move))
         return move
 
     def minimize(self, board, color, horizon):
