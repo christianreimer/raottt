@@ -28,11 +28,17 @@
 
 	<div id="Container">
 		<div id="Header">
-			<a href=# onClick='showScore();'><div id="Score">
-				<div id="ScoreText">Score</div>
-				<div id="ScoreNumber">1,234</div>
-			</div></a>
-			<a href=#><div id="Instructions">?</div></a>
+			<a href=# onClick='showScore();'>
+				<div id="Score">
+					<div id="ScoreText">Score</div>
+					<div id="ScoreNumber">1,234</div>
+				</div>
+			</a>
+
+			<a href=# onClick='showInstructions();'>
+				<div id="Instructions">?</div>
+			</a>
+			
 			<a href=#>
 				<div id="Login">
 					<img height="40" width="40" src="twit.png"/>
@@ -45,10 +51,10 @@
     </div>
 
 	<div id="welcomePopup">
-		<div id="WelcomeText"></div>
-		<button style="font-size:18px; width:100%;" class="welcomePopup_close">
-			I got it, let's play!
-		</button>
+		<div id="WelcomeText" style="min-height:160px;"></div>
+		<div id="CloseButton" class="welcomePopup_close">
+				I got it, let's play!
+		</div>
 	</div>
 
 </body>

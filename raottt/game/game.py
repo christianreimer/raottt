@@ -134,10 +134,13 @@ class Game(object):
         self.board.age(opp_color)
         self.next_color = opp_color
 
-    def cleanup(self):
+        # Update global scores to record the move was made
+        Score.update_global_score(color, winner == color)
+
+    def cleanup(self, winner):
         """Called after a game has been won"""
         logging.debug('Cleanup {}'.format(self.__str__()))
-        _ = self.score.post_game(self.next_color)
+        _ = self.score.post_game(winner)
         self.delete()
 
     def show(self):

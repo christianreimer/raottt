@@ -92,31 +92,25 @@ class API_Game(Resource):
         player.save()
         
         if game.game_over():
-            game.cleanup()
+            game.cleanup(player.color)
             return flask.make_response(json.dumps({'displayMsg': True,
                                         'message': '<p>Nice Move!</p>',
-                                        'score': player.score,
-                                        'moves': player.moves_made,
-                                        'games': player.games_participated_in}))
+                                        'score': player.score}))
 
         game.make_move(spok)
         game.inplay = False
         game.save()
 
         if game.game_over():
-            game.cleanup()
-            return flask.make_response(json.dumps({'displayMsg': True,
+            game.cleanup(spok.color)
+            return flask.make_response(json.dumps({'displayMsg': False,
                                         'message': '',
-                                        'score': player.score,
-                                        'moves': player.moves_made,
-                                        'games': player.games_participated_in}))
+                                        'score': player.score}))
 
 
         return flask.make_response(json.dumps({'displayMsg': False,
                                     'message': '',
-                                    'score': player.score,
-                                    'moves': player.moves_made,
-                                    'games': player.games_participated_in}))
+                                    'score': player.score}))
 
 
 
@@ -136,9 +130,7 @@ class API_Player(Resource):
         return flask.make_response(json.dumps({'token': player.pid,
                                     'name': player.name,
                                     'color': player.color,
-                                    'score': player.score,
-                                    'moves': player.moves_made,
-                                    'games': player.games_participated_in}))
+                                    'score': player.score}))
 
     def post(self):
         """Create a new user"""
@@ -147,13 +139,32 @@ class API_Player(Resource):
         return flask.make_response(json.dumps({'token': player.pid,
                                     'name': player.name,
                                     'color': player.color,
-                                    'score': player.score,
-                                    'moves': player.moves_made,
-                                    'games': player.games_participated_in}))
+                                    'score': player.score}))
+
+
+class API_Score(Resource):
+    """Score API endpoint"""
+
+    def get(self, uid):
+        """Return score information for this user"""
+        player = Player.load(uid)
+        total_lst = Score.get_global_score()
+        total_map = {total_lst[0]['color']: total_lst[0],
+                     total_lst[1]['color']: total_lst[1]}
+
+        return flask.make_response(
+            json.dumps({'score': player.score,
+                        'turns': player.moves_made,
+                        'games': player.games_participated_in,
+                        'totalTurns': total_map['Red']['turns'] + 
+                                      total_map['Blue']['turns'],
+                        'redWins': total_map['Red']['wins'],
+                        'blueWins': total_map['Blue']['wins']}))
 
 
 api.add_resource(API_Game, '/game/', '/game/<string:uid>/')
 api.add_resource(API_Player, '/player/', '/player/<string:uid>/')
+api.add_resource(API_Score, '/score/', '/score/<string:uid>/')
 
 
 @app.route('/')

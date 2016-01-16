@@ -214,3 +214,18 @@ class Score(object):
         logging.info('Player {} had a score change of {} waiting'.format(
             pid, delta))
         return delta
+
+    @classmethod
+    def update_global_score(cls, color, won):
+        """Update the global scores"""
+        logging.debug('Update global score color {} won {}'.format(color, won))
+        MongoDb.score.update_one({'color': color},
+                                 {'$inc': {'turns': 1,
+                                           'wins': won and 1 or 0}})
+
+    @classmethod
+    def get_global_score(cls):
+        """Return the global score"""
+        score_lst = [score for score in MongoDb.score.find()]
+        return score_lst
+

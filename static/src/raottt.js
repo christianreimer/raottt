@@ -4,6 +4,9 @@ var gameId = undefined;
 var sizes = undefined;
 var playerColor = undefined;
 var playerData = undefined;
+var totalData = undefined;
+var instructions = undefined;
+
 
 function raottt() {
     // $.removeCookie('token');
@@ -32,6 +35,7 @@ function setupRestInterface() {
     // restClient = new $.RestClient('http://66.108.32.139:8888/');
     restClient.add('game');
     restClient.add('player');
+    restClient.add('score');
 }
 
 
@@ -77,10 +81,6 @@ function getGame(token) {
     console.log("getGame called with token %o", token);
     var deferred = $.Deferred();
 
-    // if($.cookie('game')) {
-    //  deferred.resolve($.cookie('game'));
-    // }
-
     if(!token) {
         alert("Why are we getting here???");
     }
@@ -90,8 +90,22 @@ function getGame(token) {
         // $.cookie('game', data.token);
         gameId = data.ugid;
         playerColor = data.nextPlayer;
+        instructions = data.instructions;
 
         console.log('getGame returned %o', data);
+        deferred.resolve(data);
+    });
+
+    return deferred.promise();
+}
+
+function getScore(token) {
+    console.log("getScore called with token %o", token);
+    var deferred = $.Deferred();
+
+    var request = restClient.score.read(token);
+    request.done(function(data){
+        console.log('getScore returned %o', data);
         deferred.resolve(data);
     });
 
@@ -148,8 +162,9 @@ function resetBoard(token) {
         layoutBoard).pipe(
             addPieces).pipe(
                 scalePieces).pipe(
-                    setupInteraction).pipe(
-                        updateScore);
+                    setupInteraction);
+                // .pipe(
+                //         updateScore);
 }
 
 
@@ -342,9 +357,21 @@ function setupInteraction(data) {
 
 
 function showScore() {
-    var html = "<p>Your have scored " + playerData.score + " points<br>" +
-               "You have participated in " + playerData.games + " games <br>" +
-               "and made a total of " + playerData.moves + " moves</p>";
+    getScore(userToken).pipe(function (data) {
+        var html = "<p>Your have scored a total of " + data.score + " points. " +
+                   "You have participating in " + data.games + " games, and " +
+                   "made a total of " + data.turns + " moves.</p>" +
+                   "<p>In total, " + data.totalTurns + " moves have been made. " +
+                   "The Red team has won " + data.redWins + " games, while the " +
+                   "Blue team has won " + data.blueWins + "</p>";
+
+        showPopup(html);
+    });
+}
+
+
+function showInstructions() {
+    var html = "<p>" + instructions + "<p>";
     showPopup(html);
 }
 
@@ -394,8 +421,13 @@ function setupTiles() {
 
 
 function updateScore(data) {
+    var txt = $('#ScoreNumber').text();
+    var num = parseInt(txt.replace(',', ''));
+    // console.log('updateScore() current value is text='+ txt + ' num=' + num);
+
     $('#ScoreNumber').numerator({
-        duration: 500,
+        duration: 750,
         delimiter: ',',
-        toValue: data.score});
+        toValue: data.score,
+        fromValue: num});
 }
