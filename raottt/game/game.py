@@ -63,7 +63,7 @@ class Game(object):
         logging.debug('Deleted {}'.format(self.__str__()))
 
     @classmethod
-    def pick(cls, player):
+    def pick(cls, player, create_if_needed=True):
         """Picks an existing game that can be played by the specified player.
         If no suitable game is found, a new one will be created and returned."""
         gid_lst = [record['gid'] for record in \
@@ -72,10 +72,15 @@ class Game(object):
         logging.debug('{} can pick from {} possibilities'.format(
             player.color, len(gid_lst)))
 
-        if len(gid_lst) < 5:
+        if len(gid_lst) < 5 and create_if_needed:
             gid_lst += create_new_games(5 - len(gid_lst), player.color)
 
-        gid = random.choice(gid_lst)
+        try:
+            gid = random.choice(gid_lst)
+        except IndexError:
+            raise IndexError('No games ready to play for color {}'.format(
+                player.color))
+
         game = cls.load(gid)
         game.inplay = True
         logging.debug('Picked {} for pid {}'.format(game, player.pid))
