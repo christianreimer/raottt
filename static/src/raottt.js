@@ -363,7 +363,7 @@ function showScore() {
                    "made a total of " + data.turns + " moves.</p>" +
                    "<p>In total, " + data.totalTurns + " moves have been made. " +
                    "The Red team has won " + data.redWins + " games, while the " +
-                   "Blue team has won " + data.blueWins + "</p>";
+                   "Blue team has won " + data.blueWins + ".</p>";
 
         showPopup(html);
     });
