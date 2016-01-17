@@ -87,14 +87,14 @@ class API_Game(Resource):
                 gid, pid))
             return flask.make_response(oh_no())
 
-        game.make_move(player)
+        score_change = game.make_move(player)
         game.save()
         player.save()
         
         if game.game_over():
             game.cleanup(player.color)
             return flask.make_response(json.dumps({'displayMsg': True,
-                                        'message': '<p>Nice Move!</p>',
+                                        'message': '<p>Nice Move!</P><p>You just added {} points to your own score, and you helped out all the other {} players who participated in this game.</p>'.format(score_change, player.color),
                                         'score': player.score}))
 
         game.make_move(spok)

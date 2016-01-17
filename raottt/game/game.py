@@ -125,7 +125,8 @@ class Game(object):
         ratio = self.board.value_ratio(color)
         winner = self.board.winner()
 
-        player.score += self.score.after_move(score, ratio, winner, color, pid)
+        score_change = self.score.after_move(score, ratio, winner, color, pid)
+        player.score += score_change
         player.moves_made += 1
         if self.score.moves_made_by_player(player) == 1:
             player.games_participated_in += 1
@@ -136,6 +137,7 @@ class Game(object):
 
         # Update global scores to record the move was made
         Score.update_global_score(color, winner == color)
+        return score_change
 
     def cleanup(self, winner):
         """Called after a game has been won"""
