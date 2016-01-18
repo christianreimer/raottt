@@ -4,7 +4,6 @@ var gameId = undefined;
 var sizes = undefined;
 var playerColor = undefined;
 var playerData = undefined;
-var totalData = undefined;
 var instructions = undefined;
 
 
@@ -25,7 +24,7 @@ function raottt() {
 
     positionBoard(sizes);
 
-    getUserToken().pipe(resetBoard);
+    fetchUser().pipe(resetBoard);
 }
 
 
@@ -39,8 +38,8 @@ function setupRestInterface() {
 }
 
 
-function getUserToken() {
-    console.log("getUserToken called")
+function fetchUser() {
+    console.log("fetchUser called")
 
     var deferred = $.Deferred();
     var token = $.cookie('token');
@@ -69,7 +68,7 @@ function getUserToken() {
             showPopup(firstTimeGreeting(data.name, data.color));
             updateScore(data);
             playerData = data;
-            $.cookie('token', data.token);
+            $.cookie('token', data.token, {expires: 7});
             deferred.resolve(data.token);
         });
     }

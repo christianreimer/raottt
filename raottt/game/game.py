@@ -47,7 +47,8 @@ class Game(object):
     @classmethod
     def load(cls, gid):
         """Load the game with specified id from the database"""
-        game = cls.loadd(MongoDb.game.find_one({'gid': gid}))
+        game = cls.loadd(MongoDb.game.find_and_modify(
+            query={'gid': gid}, update={'$set':{'inplay': True}}))
         logging.debug('Loaded {}'.format(game))
         return game
 
@@ -67,7 +68,7 @@ class Game(object):
         """Picks an existing game that can be played by the specified player.
         If no suitable game is found, a new one will be created and returned."""
         gid_lst = [record['gid'] for record in \
-            MongoDb.game.find({'next_color': player.color})]
+            MongoDb.game.find({'next_color': player.color, 'inplay': False})]
 
         logging.debug('{} can pick from {} possibilities'.format(
             player.color, len(gid_lst)))
@@ -82,7 +83,6 @@ class Game(object):
                 player.color))
 
         game = cls.load(gid)
-        game.inplay = True
         logging.debug('Picked {} for pid {}'.format(game, player.pid))
         return game
 

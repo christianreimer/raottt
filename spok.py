@@ -2,17 +2,18 @@
 Spok is a simple AI player in the raottt game.
 
 Usage: spok.py create
-       spok.py play --red=<r> --blue=<b> [--lookahead=<l>] [--frequency=<s>]
+       spok.py play --red=<r> --blue=<b> [--frequency=<s>]
        spok.py clean [--ttl=<t>]
 
 Options:
     --red=<r>           The pid for the red player
     --blue=<b>          The pid for the blue player
-    --lookahead=<l>     The number of moves to lookahead [default: 3]
-    --frequency=<s>     How many seconds to sleep between moves [default: 3]
+    --frequency=<s>     How many seconds to sleep between moves [default: 10]
     --ttl=<t>           Seconds before a game is abandoned [default: 3600]
 """
 
+import logging
+import random
 import time
 
 from docopt import docopt
@@ -26,15 +27,16 @@ MongoDb = database.DatabaseConnection()
 
 def turns_and_color(player_red, player_blue):
     """Return the number of turns to make and which color to play for."""
-    # Return min(color) / 2 + max(color) - min(color)
-    avail_red = MongoDb.find({'next_color': 'Red'}).count()
-    avail_blue = MongoDb.find({'next_color': 'Blue'}).count()
+    avail_red = MongoDb.game.find({'next_color': 'Red', 'inplay': False}).count()
+    avail_blue = MongoDb.game.find({'next_color': 'Blue', 'inplay': False}).count()
 
     if avail_red > avail_blue:
-        return player_red, avail_blue / 2 + (avail_red - avail_blue)
+        return player_red, avail_blue // 2 + (avail_red - avail_blue) // 2
     elif avail_blue > avail_red:
-        return player_blue, avail_red / 2 + (avail_blue - avail_red)
-
+        return player_blue, avail_red // 2 + (avail_blue - avail_red) // 2
+    else:
+        player = random.choice((player_red, player_blue))
+        return player, avail_red // 2
 
 
 def take_turn(player):
@@ -42,8 +44,6 @@ def take_turn(player):
     try:
         game = raottt.Game.pick(player, create_if_needed=False)
     except IndexError:
-        # Nothing to do
-        print('No games waiting for a move, snoozing ....')
         return
 
     game.make_move(player)
@@ -54,11 +54,28 @@ def take_turn(player):
         game.cleanup(player.color)
 
 
-def create(color):
+def create():
     """Create new player"""
-    player = ComputerPlayer.new(color)
-    player.save()
-    print('Created {}'.format(player))
+    red = ComputerPlayer.new('Red')
+    red.save()
+    print('Created {}'.format(red))
+
+    blue = ComputerPlayer.new('Blue')
+    blue.save()
+    print('Created {}'.format(blue))
+
+
+def loop(pid_red, pid_blue, frequency):
+    """Loop forever and take turns"""
+    red = ComputerPlayer(raottt.Player.load(pid_red).dumpd())
+    blue = ComputerPlayer(raottt.Player.load(pid_blue).dumpd())
+
+    while True:
+        time.sleep(frequency)
+        player, turns = turns_and_color(red, blue)
+        logging.info('{} Spok should take {} turns'.format(player.color, turns))
+        for _ in range(turns):
+            take_turn(player)
 
 
 def main():
@@ -66,14 +83,11 @@ def main():
     args = docopt(__doc__)
     
     if args['create']:
-        create(args['--red'] and 'Red' or 'Blue')
+        create()
         return
 
-    player = ComputerPlayer(raottt.Player.load(args['--pid']).dumpd())
-
-    while True:    
-        time.sleep(int(args['--frequency']))
-        take_turn(player)
+    if args['play']:
+        loop(args['--red'], args['--blue'], int(args['--frequency']))
 
 
 if __name__ == '__main__':

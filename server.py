@@ -88,6 +88,7 @@ class API_Game(Resource):
             return flask.make_response(oh_no())
 
         score_change = game.make_move(player)
+        game.inplay = False
         game.save()
         player.save()
         
