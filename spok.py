@@ -1,9 +1,9 @@
 """
 Spok is a simple AI player in the raottt game.
 
-Usage: spok.py create
-       spok.py play --red=<r> --blue=<b> [--frequency=<s>]
+Usage: spok.py play --red=<r> --blue=<b> [--frequency=<s>]
        spok.py clean [--ttl=<t>]
+       spok.oy create
 
 Options:
     --red=<r>           The pid for the red player
@@ -12,6 +12,7 @@ Options:
     --ttl=<t>           Seconds before a game is abandoned [default: 3600]
 """
 
+import datetime
 import logging
 import random
 import time
@@ -19,13 +20,28 @@ import time
 from docopt import docopt
 
 import raottt
+from raottt import Game
 from raottt.player.computer import ComputerPlayer
 
 from raottt.util import database
 MongoDb = database.DatabaseConnection()
 
 
-def turns_and_color(player_red, player_blue):
+def cleanup(ttl):
+    """Remove the inplay flag for abandoned games"""
+    cutoff = datetime.datetime.utcnow() - datetime.timedelta(seconds=ttl)
+    game_lst = [g for g in MongoDb.game.find({'checkout': {'$lt': cutoff}})]
+    for game in game_lst:
+        game = Game.load(game['gid'])
+        logging.debug('Spok force returning game {} checked out at {}'.format(
+            game.gid, game.checkout))
+        game.inplay = False
+        game.player = None
+        game.checkout = None
+        game.save()
+
+
+def player_and_turns(player_red, player_blue):
     """Return the number of turns to make and which color to play for."""
     avail_red = MongoDb.game.find({'next_color': 'Red', 'inplay': False}).count()
     avail_blue = MongoDb.game.find({'next_color': 'Blue', 'inplay': False}).count()
@@ -72,7 +88,7 @@ def loop(pid_red, pid_blue, frequency):
 
     while True:
         time.sleep(frequency)
-        player, turns = turns_and_color(red, blue)
+        player, turns = player_and_turns(red, blue)
         logging.info('{} Spok should take {} turns'.format(player.color, turns))
         for _ in range(turns):
             take_turn(player)
@@ -88,6 +104,10 @@ def main():
 
     if args['play']:
         loop(args['--red'], args['--blue'], int(args['--frequency']))
+
+    if args['clean']:
+        cleanup(int(args['--ttl']))
+
 
 
 if __name__ == '__main__':

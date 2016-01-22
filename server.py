@@ -18,12 +18,8 @@ from raottt import Game
 from raottt import Player
 from raottt import Score
 from raottt.player.rest import RESTPlayer
-from raottt.player.computer import ComputerPlayer
 from raottt.util import adapter
 
-
-spok = ComputerPlayer.new('Blue')
-spok.save()
 
 app = flask.Flask(__name__, static_url_path='')
 api = Api(app)
@@ -81,7 +77,12 @@ class API_Game(Resource):
         player.score += Score.check_for_score_upate(player.pid)
 
         player.queue_move((source, target))
-        game = Game.load(uid)
+
+        try:
+            game = Game.load(uid, validate=True, player=player)
+        except ValueError:
+            return flask.make_response(oh_no())
+
         if not game:
             logging.error('API_Game put for unknown gid {} from pid {}'.format(
                 gid, pid))
@@ -98,17 +99,6 @@ class API_Game(Resource):
                                         'message': '<p>Nice Move!</P><p>You just added {} points to your own score, and you helped out all the other {} players who participated in this game.</p>'.format(score_change, player.color),
                                         'score': player.score}))
 
-        # game.make_move(spok)
-        # game.inplay = False
-        # game.save()
-
-        # if game.game_over():
-        #     game.cleanup(spok.color)
-        #     return flask.make_response(json.dumps({'displayMsg': False,
-        #                                 'message': '',
-        #                                 'score': player.score}))
-
-
         return flask.make_response(json.dumps({'displayMsg': False,
                                     'message': '',
                                     'score': player.score}))
@@ -120,7 +110,12 @@ class API_Player(Resource):
 
     def get(self, uid):
         """Return the user specified by uid"""
-        player = Player.load(uid)
+        try:
+            player = Player.load(uid)
+        except ValueError as err:
+            # Invalid (non-existing) user id, just create a new user
+            logging.error(err)
+            return self.post()
 
         # Apply any score change that results from other people moves
         score_change = Score.check_for_score_upate(player.pid)
@@ -131,7 +126,8 @@ class API_Player(Resource):
         return flask.make_response(json.dumps({'token': player.pid,
                                     'name': player.name,
                                     'color': player.color,
-                                    'score': player.score}))
+                                    'score': player.score,
+                                    'returning': 1}))
 
     def post(self):
         """Create a new user"""
@@ -140,7 +136,8 @@ class API_Player(Resource):
         return flask.make_response(json.dumps({'token': player.pid,
                                     'name': player.name,
                                     'color': player.color,
-                                    'score': player.score}))
+                                    'score': player.score,
+                                    'returning': 0}))
 
 
 class API_Score(Resource):

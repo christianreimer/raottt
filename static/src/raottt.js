@@ -24,7 +24,7 @@ function raottt() {
 
     positionBoard(sizes);
 
-    fetchUser().pipe(resetBoard);
+    fetchUser().pipe(sayHello).pipe(resetBoard);
 }
 
 
@@ -51,11 +51,9 @@ function fetchUser() {
         request.done(function(data) {
             userToken = data.token;
             playerColor = data.color;
-
-            showPopup(returnGreeting(data.name, data.color, data.score));
-            updateScore(data);      
-            playerData = data;      
-            deferred.resolve(data.token);
+            playerData = data;
+            $.cookie('token', data.token, {expires: 7});
+            deferred.resolve(data);
         });
     } else {
         // New user
@@ -64,17 +62,30 @@ function fetchUser() {
         request.done(function(data){
             userToken = data.token;
             playerColor = data.color;
-
-            showPopup(firstTimeGreeting(data.name, data.color));
-            updateScore(data);
             playerData = data;
             $.cookie('token', data.token, {expires: 7});
-            deferred.resolve(data.token);
+            deferred.resolve(data);
         });
     }
 
     return deferred.promise();
 }
+
+
+function sayHello(data) {
+    console.log('sayHello called with %o', data);
+
+    if(data.returning) {
+        showPopup(returnGreeting(data.name, data.color, data.score));
+    }
+    else {
+        showPopup(firstTimeGreeting(data.name, data.color));
+    }
+
+    updateScore(data);   
+    return data.token;       
+}
+
 
 function getGame(token) {
     console.log("getGame called with token %o", token);
@@ -86,7 +97,6 @@ function getGame(token) {
 
     var request = restClient.game.read(token);
     request.done(function(data){
-        // $.cookie('game', data.token);
         gameId = data.ugid;
         playerColor = data.nextPlayer;
         instructions = data.instructions;
@@ -162,8 +172,6 @@ function resetBoard(token) {
             addPieces).pipe(
                 scalePieces).pipe(
                     setupInteraction);
-                // .pipe(
-                //         updateScore);
 }
 
 

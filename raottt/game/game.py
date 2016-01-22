@@ -6,6 +6,7 @@ specifically the set of users that have previousely played this game, and the
 change in board value.
 """
 
+import datetime
 import uuid
 import random
 import logging
@@ -22,16 +23,17 @@ MongoDb = DatabaseConnection()
 
 class Game(object):
     """Tracks the current state as well as the history of the game."""
-    def __init__(self, gid, next_color, board, score, inplay):
+    def __init__(self, gid, next_color, board, score, inplay, checkout):
         self.gid = gid
         self.next_color = next_color
         self.board = board
         self.score = score
         self.inplay = inplay
+        self.checkout = checkout
 
     def __str__(self):
-        return 'Game:{} next:{} inplay:{}'.format(
-            self.gid, self.next_color, self.inplay)
+        return 'Game:{} next:{} inplay:{} checkout:{}'.format(
+            self.gid, self.next_color, self.inplay, self.checkout)
 
     @classmethod
     def new(cls, first_player):
@@ -40,15 +42,35 @@ class Game(object):
         next_color = first_player
         board = Board()
         score = Score.new(gid)
-        game = cls(gid, next_color, board, score, False)
+        game = cls(gid, next_color, board, score, False, None)
         logging.debug('New {}'.format(game))
         return game
 
     @classmethod
-    def load(cls, gid):
+    def load(cls, gid, validate=False, player=None):
         """Load the game with specified id from the database"""
-        game = cls.loadd(MongoDb.game.find_and_modify(
-            query={'gid': gid}, update={'$set':{'inplay': True}}))
+        game = cls.loadd(MongoDb.game.find_one({'gid': gid}))
+
+        if validate:
+            try:
+                game_pid = game.player
+            except AttributeError:
+                # Order game with no player stored on it
+                logging.error('No player attribute on game {}'.format(gid))
+                game_pid = player.pid
+
+            if not game_pid == player.pid:
+                err_msg = 'Player {} does not have game {} reserved'.format(
+                    pid, gid)
+                logging.error(err_msg)
+                raise ValueError(err_msg)
+
+            if not game.inplay:
+                err_msg = ('Player {} tried to load game {} which is '
+                           'not checked out'.format(pid, gid))
+                logging.error(err_msg)
+                raise ValueError(err_msg)
+
         logging.debug('Loaded {}'.format(game))
         return game
 
@@ -82,7 +104,13 @@ class Game(object):
             raise IndexError('No games ready to play for color {}'.format(
                 player.color))
 
-        game = cls.load(gid)
+        utc_now = datetime.datetime.utcnow()
+
+        game = cls.loadd(MongoDb.game.find_and_modify(
+            query={'gid': gid}, update={'$set':{'inplay': True,
+                                                 'checkout': utc_now,
+                                                 'player': player.pid}}))
+
         logging.debug('Picked {} for pid {}'.format(game, player.pid))
         return game
 
@@ -94,7 +122,8 @@ class Game(object):
         board = Board.loadd(state['board'])
         score = Score.loadd(state['score'])
         inplay = state['inplay']
-        return cls(gid, next_color, board, score, inplay)
+        checkout = state.get('checkout', None)  # Because old games do not have
+        return cls(gid, next_color, board, score, inplay, checkout)
 
     def dumpd(self):
         """Dump game state as a dict"""
@@ -102,7 +131,8 @@ class Game(object):
                 'next_color': self.next_color,
                 'board': self.board.dumpd(),
                 'score': self.score.dumpd(),
-                'inplay': self.inplay}
+                'inplay': self.inplay,
+                'checkout': self.checkout}
 
     def dumpjs(self):
         """Return game state as dict suitable for js"""
