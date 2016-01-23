@@ -1,9 +1,11 @@
+#!/usr/bin/env python
+
 """
 Spok is a simple AI player in the raottt game.
 
-Usage: spok.py play --red=<r> --blue=<b> [--frequency=<s>]
-       spok.py clean [--ttl=<t>]
-       spok.oy create
+Usage: spok play --red=<r> --blue=<b> [--frequency=<s>]
+       spok clean [--ttl=<t>]
+       spok create
 
 Options:
     --red=<r>           The pid for the red player
@@ -47,12 +49,12 @@ def player_and_turns(player_red, player_blue):
     avail_blue = MongoDb.game.find({'next_color': 'Blue', 'inplay': False}).count()
 
     if avail_red > avail_blue:
-        return player_red, avail_blue // 2 + (avail_red - avail_blue) // 2
+        return player_red, avail_blue // 3 + (avail_red - avail_blue) // 2
     elif avail_blue > avail_red:
-        return player_blue, avail_red // 2 + (avail_blue - avail_red) // 2
+        return player_blue, avail_red // 3 + (avail_blue - avail_red) // 2
     else:
         player = random.choice((player_red, player_blue))
-        return player, avail_red // 2
+        return player, avail_red // 3
 
 
 def take_turn(player):

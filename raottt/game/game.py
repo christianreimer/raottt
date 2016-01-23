@@ -67,7 +67,7 @@ class Game(object):
 
             if not game.inplay:
                 err_msg = ('Player {} tried to load game {} which is '
-                           'not checked out'.format(pid, gid))
+                           'not checked out'.format(player.pid, gid))
                 logging.error(err_msg)
                 raise ValueError(err_msg)
 

@@ -4,7 +4,7 @@
 Simple harness that will run the TTT game. Can do any of Human vs Human,
 Human vs Computer, or Computer vs Computer.
 
-Usage: play.py [--blue=<b>] [--red=<r>] [--games=<n>] [--show]
+Usage: play [--blue=<b>] [--red=<r>] [--games=<n>] [--show]
 
 Options:
     --blue=<b>      Blue player type (Human or Computer) [default: Computer]
@@ -30,7 +30,7 @@ def toggle(item1, item2):
         yield item2
 
 
-def run_game(player1, player2, max_rounds, show=True):
+def run_game(player1, player2, max_rounds, show=False):
     """Run a game between player1 and player2 for max_rounds and then return
     the game state"""
     game = Game.new('Blue')
@@ -43,7 +43,7 @@ def run_game(player1, player2, max_rounds, show=True):
         if game.game_over():
             break
 
-        player = player_toggle.next()
+        player = player_toggle.__next__()
         game.make_move(player)
         game.validate()
 

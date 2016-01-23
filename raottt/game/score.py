@@ -157,7 +157,7 @@ class Score(object):
         if winner == color:
             one_third_of_value = math.ceil(1/3 * self.state['value'])
             score_change += max(one_third_of_value, VALUE_WINNING_MOVE)
-            self.state['value'] -= score_change
+            # self.state['value'] -= score_change
         
         logging.debug('Score after_move change {}'.format(score_change))
         return score_change

@@ -170,8 +170,7 @@ function resetBoard(token) {
     getGame(token).pipe(
         layoutBoard).pipe(
             addPieces).pipe(
-                scalePieces).pipe(
-                    setupInteraction);
+                setupInteraction);
 }
 
 
@@ -234,20 +233,6 @@ function scalePiece(piece) {
     piece.css("height", sizes.tile - sizes.padding);
     piece.css("font-size", sizes.font);
     piece.css("border-radius", sizes.radius);    
-}
-
-
-function scalePieces(data) {
-    console.log("scalePieces called");
-    $(".piece").each(function(i) {
-        // scalePiece($(this));
-        // $(this).css("width", sizes.tile - sizes.padding);
-        // $(this).css("height", sizes.tile - sizes.padding);
-        // $(this).css("font-size", sizes.font);
-        // $(this).css("border-radius", sizes.radius);
-    });
-
-    return data;
 }
 
 
@@ -430,7 +415,6 @@ function setupTiles() {
 function updateScore(data) {
     var txt = $('#ScoreNumber').text();
     var num = parseInt(txt.replace(',', ''));
-    // console.log('updateScore() current value is text='+ txt + ' num=' + num);
 
     $('#ScoreNumber').numerator({
         duration: 750,

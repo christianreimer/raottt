@@ -1,33 +1,77 @@
 #!/usr/bin/env python
 
 """
-Create a number of games states and save them as JSON.
+Create a number of games states to prime the game.
 
-Used for easy development of the UI.
+Usage: play --games=<n> [--lower=<l>] [--upper=<u>] [--stock=<s>]
+
+Options:
+    --lower=<l>    Lower bound of rounds to play per game [default: 6]
+    --upper=<u>    Upper bound of rounds to play per game [default: 12]
+    --stock=<s>    Only create games if stock is low [default: 20]
 """
 
-from raottt.player.computer import ComputerPlayer
-from raottt.game import opponent
-import play
 import random
-import json
+
+from docopt import docopt
+
+from raottt import DatabaseConnection
+from raottt import Game
+from raottt.player.computer import ComputerPlayer
 
 
+MongoDb = DatabaseConnection()
 
-def main():
-    """ """
-    games = []
-    blue = ComputerPlayer('Blue', opponent)
-    red = ComputerPlayer('Red', opponent)
 
-    for i in xrange(10):
-        print('Playing game #%s' % i)
-        game = play.run_game(blue, red, random.randint(6, 12), show=False)
-        games.append(game.dump())
+def toggle(item1, item2):
+    """Return a generator that will contnually toggle between the two items"""
+    while True:
+        yield item1
+        yield item2
 
-    with open('games.json', 'w') as ofile:
-        ofile.write(json.dumps(games))
+
+def stock_is_low(min_stock):
+    """Return true if there are fewer thn min_stock games availeble"""
+    return min_stock > MongoDb.game.find({'inplay': False}).count()
+
+
+def main(num_games, lower, upper, min_stock):
+    """main"""
+    if not stock_is_low(min_stock):
+        print('Stock is high -- nothing to do')
+        return
+
+    blue = ComputerPlayer.new('Blue')
+    red = ComputerPlayer.new('Red')
+
+    for i in range(num_games):
+        if random.choice(('Red', 'Blue')) == 'Red':
+            game = Game.new('Red')
+            player_toggle = toggle(red, blue)
+        else:
+            game = Game.new('Blue')
+            player_toggle = toggle(blue, red)
+
+        for turns in range(random.randint(lower, upper)):
+            if game.game_over():
+                break
+
+            player = player_toggle.__next__()
+            game.make_move(player)
+            game.validate()
+
+        print('Saving game #{} after {} turns:'.format(i+1, turns+1 ))
+        game.show()
+        game.save()
 
 
 if __name__ == '__main__':
-    main()
+    args = docopt(__doc__)
+
+    num_games = int(args['--games'])
+    lower = int(args['--lower'])
+    upper = int(args['--upper'])
+    min_stock = int(args['--stock'])
+
+    main(num_games, lower, upper, min_stock)
+
