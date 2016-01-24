@@ -3,16 +3,21 @@
 """
 Spok is a simple AI player in the raottt game.
 
-Usage: spok play --red=<r> --blue=<b> [--frequency=<s>]
-       spok clean [--ttl=<t>]
-       spok create
+Usage: spok play --red=<r> --blue=<b> [--ttl=<t>] [--stock=<m>]
+                [--frequency=<s>] [--lower=<l>] [--upper=<u>] [--games=<n>]
+       spok init
 
 Options:
-    --red=<r>           The pid for the red player
-    --blue=<b>          The pid for the blue player
-    --frequency=<s>     How many seconds to sleep between moves [default: 10]
-    --ttl=<t>           Seconds before a game is abandoned [default: 3600]
+    --red=<r>         Pid of the red player
+    --blue=<b>        Pic of the blue player
+    --ttl=<t>         Seconds before a game is abandoned [default: 3600]
+    --stock=<m>       Minimum number of available games [default: 25]
+    --frequency=<s>   How many sec to sleep between plays [default: 10]
+    --lower=<l>       Lower bound of rounds to play per game [default: 6]
+    --upper=<u>       Upper bound of rounds to play per game [default: 12]
+    --games=<n>       Number of games to create when stock is low [default: 10]
 """
+ 
 
 import datetime
 import logging
@@ -29,13 +34,46 @@ from raottt.util import database
 MongoDb = database.DatabaseConnection()
 
 
+def toggle(item1, item2):
+    """Return a generator that will contnually toggle between the two items"""
+    while True:
+        yield item1
+        yield item2
+
+
+def create_games(num_games, lower, upper):
+    """Create ``num_games`` games"""
+    blue = ComputerPlayer.new('Blue')
+    red = ComputerPlayer.new('Red')
+
+    for i in range(num_games):
+        if random.choice(('Red', 'Blue')) == 'Red':
+            game = Game.new('Red')
+            player_toggle = toggle(red, blue)
+        else:
+            game = Game.new('Blue')
+            player_toggle = toggle(blue, red)
+
+        for turns in range(random.randint(lower, upper)):
+            if game.game_over():
+                break
+
+            player = player_toggle.__next__()
+            game.make_move(player)
+            game.validate()
+
+        logging.info('Spok created game with {} turns, next player {}'.format(
+            turns+1, game.next_color))
+        game.save()
+
+
 def cleanup(ttl):
     """Remove the inplay flag for abandoned games"""
     cutoff = datetime.datetime.utcnow() - datetime.timedelta(seconds=ttl)
     game_lst = [g for g in MongoDb.game.find({'checkout': {'$lt': cutoff}})]
     for game in game_lst:
         game = Game.load(game['gid'])
-        logging.debug('Spok force returning game {} checked out at {}'.format(
+        logging.info('Spok force returning game {} checked out at {}'.format(
             game.gid, game.checkout))
         game.inplay = False
         game.player = None
@@ -48,28 +86,32 @@ def player_and_turns(player_red, player_blue):
     avail_red = MongoDb.game.find({'next_color': 'Red', 'inplay': False}).count()
     avail_blue = MongoDb.game.find({'next_color': 'Blue', 'inplay': False}).count()
 
+    logging.info('Game availability red={} blue={}'.format(
+        avail_red, avail_blue))
+
     if avail_red > avail_blue:
-        return player_red, avail_blue // 3 + (avail_red - avail_blue) // 2
+        return player_red, max(1, (avail_red - avail_blue) // 2)
     elif avail_blue > avail_red:
-        return player_blue, avail_red // 3 + (avail_blue - avail_red) // 2
+        return player_blue, max(1, (avail_blue - avail_red) // 2)
     else:
         player = random.choice((player_red, player_blue))
         return player, avail_red // 3
 
 
-def take_turn(player):
-    """Take a turn"""
-    try:
-        game = raottt.Game.pick(player, create_if_needed=False)
-    except IndexError:
-        return
+def take_turns(turns, player):
+    """Take ``turns`` turns"""
+    for _ in range(turns):
+        try:
+            game = raottt.Game.pick(player, create_if_needed=False)
+        except IndexError:
+            return
 
-    game.make_move(player)
-    game.inplay = False
-    game.save()
+        game.make_move(player)
+        game.inplay = False
+        game.save()
 
-    if game.game_over():
-        game.cleanup(player.color)
+        if game.game_over():
+            game.cleanup(player.color)
 
 
 def create():
@@ -83,33 +125,62 @@ def create():
     print('Created {}'.format(blue))
 
 
-def loop(pid_red, pid_blue, frequency):
-    """Loop forever and take turns"""
-    red = ComputerPlayer(raottt.Player.load(pid_red).dumpd())
-    blue = ComputerPlayer(raottt.Player.load(pid_blue).dumpd())
+def init():
+    """Init database and users"""
+    database.nuke(True)
+    database.init()
 
-    while True:
-        time.sleep(frequency)
-        player, turns = player_and_turns(red, blue)
-        logging.info('{} Spok should take {} turns'.format(player.color, turns))
-        for _ in range(turns):
-            take_turn(player)
+    red = ComputerPlayer.new('Red')
+    red.save()
+    blue = ComputerPlayer.new('Blue')
+    blue.save()
+
+    return red, blue
 
 
 def main():
     """main"""
     args = docopt(__doc__)
     
-    if args['create']:
-        create()
-        return
+    if args['init']:
+        msg = 'Are you sure you want to init (all data will be erased): '
+        answer = input(msg)
+        if answer.upper() in ('YES', 'Y'):
+            red, blue = init()
+            print('Created red={} blue={}'.format(red.pid, blue.pid))
+            return
 
-    if args['play']:
-        loop(args['--red'], args['--blue'], int(args['--frequency']))
+    pid_red = args['--red']
+    pid_blue = args['--blue']
+    sleep_sec = int(args['--frequency'])
+    ttl = int(args['--ttl'])
+    min_stock = int(args['--stock'])
+    lower = int(args['--lower'])
+    upper = int(args['--upper'])
+    num_games = int(args['--games'])
 
-    if args['clean']:
-        cleanup(int(args['--ttl']))
+    red = ComputerPlayer(raottt.Player.load(pid_red).dumpd())
+    blue = ComputerPlayer(raottt.Player.load(pid_blue).dumpd())
 
+    while True:
+        # Perform moves to keep the game running
+        player, turns = player_and_turns(red, blue)
+        logging.info('Spok should take {} turns for the {} team'.format(
+            turns, player.color))
+        take_turns(turns, player)
+
+        # Cleanup abandoned games
+        cleanup(ttl)
+
+        # Make sure there are games available to play
+        stock = MongoDb.game.find({'inplay': False}).count()
+        logging.info('Spok current stock is at {} (min={})'.format(
+            stock, min_stock))
+
+        if min_stock > stock:
+            create_games(num_games, lower, upper)
+
+        time.sleep(sleep_sec)
 
 
 if __name__ == '__main__':
