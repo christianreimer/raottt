@@ -40,9 +40,10 @@ class API_Game(Resource):
         """Return a game that can be played by the player with pid"""
         logging.debug('API_Game.get {}'.format(uid))
   
-        player = RESTPlayer(Player.load(uid).dumpd())
-        if not player:
-            logging.error('API_Game get for unknown pid {}'.format(uid))
+        try:
+            player = RESTPlayer(Player.load(uid).dumpd())
+        except KeyError:
+            logging.error('API_Game.get for unknown pid {}'.format(uid))
             return flask.make_response(oh_no())
         
         # Apply any score change that results from other people moves
@@ -52,10 +53,6 @@ class API_Game(Resource):
             player.save()
 
         game = Game.pick(player)
-        if not game:
-            logging.error('Unable to pick a game for player {}'.format(uid))
-            return flask.make_response(oh_no())
-
         return flask.make_response(json.dumps(adapter.enrich_message(game)))
 
     def put(self, uid):
@@ -71,37 +68,65 @@ class API_Game(Resource):
 
         player = RESTPlayer(Player.load(pid).dumpd())
         if not player:
-            logging.error('API_Game put from unknown pid {}'.format(pid))
+            logging.error('API_Game.put from unknown pid {}'.format(pid))
             return flask.make_response(oh_no())
 
-        player.score += Score.check_for_score_upate(player.pid)
+        # Apply any score change that results from other people moves
+        score_change = Score.check_for_score_upate(player.pid)
+        if score_change:
+            player.score += score_change
+            player.save()
 
-        player.queue_move((source, target))
+        game = None
 
         try:
             game = Game.load(uid, validate=True, player=player)
         except ValueError:
-            return flask.make_response(oh_no())
+            logging.error(
+                'API_Game.put pid {} returned to abandoned gid {}'.format(
+                    player.pid, uid))
+        except KeyError:
+            logging.error(
+                'API_Game.put for unknown gid {} from pid {}'.format(gid, pid))
 
         if not game:
-            logging.error('API_Game put for unknown gid {} from pid {}'.format(
-                gid, pid))
-            return flask.make_response(oh_no())
+            # Instead of giving the player an error, we just pretend to have
+            # processed the move and they will get a new game. They probably
+            # wont event notice ...
+            return flask.make_response(json.dumps({'displayMsg': False,
+                                                   'message': '',
+                                                   'score': player.score}))
 
+        player.queue_move((source, target))
         score_change = game.make_move(player)
+        player.score += score_change
+        player.moves_made += 1
+        player.save()
+
         game.inplay = False
         game.save()
-        player.save()
-        
+                
         if game.game_over():
             game.cleanup(player.color)
-            return flask.make_response(json.dumps({'displayMsg': True,
-                                        'message': '<p>Nice Move!</P><p>You just added {} points to your own score, and you helped out all the other {} players who participated in this game.</p>'.format(score_change, player.color),
-                                        'score': player.score}))
+
+            # There will be more points because the user participated in a
+            # winning game
+            score_additional = Score.check_for_score_upate(player.pid)
+            player.score += score_additional
+            player.save()
+
+            return flask.make_response(json.dumps(
+                {'displayMsg': True,
+                 'message': ('<p>Nice Move!</P><p>You just added {} points to '
+                             'your own score, and you helped out all the other '
+                             '{} players who participated in this game.</p>'
+                             ''.format(score_change + score_additional, 
+                                       player.color)),
+                 'score': player.score}))
 
         return flask.make_response(json.dumps({'displayMsg': False,
-                                    'message': '',
-                                    'score': player.score}))
+                                               'message': '',
+                                               'score': player.score}))
 
 
 
@@ -112,7 +137,7 @@ class API_Player(Resource):
         """Return the user specified by uid"""
         try:
             player = Player.load(uid)
-        except ValueError as err:
+        except KeyError as err:
             # Invalid (non-existing) user id, just create a new user
             logging.error(err)
             return self.post()
@@ -124,20 +149,20 @@ class API_Player(Resource):
             player.save()
 
         return flask.make_response(json.dumps({'token': player.pid,
-                                    'name': player.name,
-                                    'color': player.color,
-                                    'score': player.score,
-                                    'returning': 1}))
+                                               'name': player.name,
+                                               'color': player.color,
+                                               'score': player.score,
+                                               'returning': 1}))
 
     def post(self):
         """Create a new user"""
         player = RESTPlayer.new('Red')
         player.save()
         return flask.make_response(json.dumps({'token': player.pid,
-                                    'name': player.name,
-                                    'color': player.color,
-                                    'score': player.score,
-                                    'returning': 0}))
+                                               'name': player.name,
+                                               'color': player.color,
+                                               'score': player.score,
+                                               'returning': 0}))
 
 
 class API_Score(Resource):

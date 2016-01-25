@@ -50,7 +50,7 @@ class Player(object):
         """Load player state from database"""
         state = MongoDb.player.find_one({'pid': pid})
         if not state:
-            raise ValueError('Could not load pid {} from database'.format(pid))
+            raise KeyError('Could not load pid {} from database'.format(pid))
         player = cls(state)
         logging.debug('Loaded {}'.format(player))
         return player

@@ -86,7 +86,7 @@ def player_and_turns(player_red, player_blue):
     avail_red = MongoDb.game.find({'next_color': 'Red', 'inplay': False}).count()
     avail_blue = MongoDb.game.find({'next_color': 'Blue', 'inplay': False}).count()
 
-    logging.info('Game availability red={} blue={}'.format(
+    logging.info('Spok game availability red={} blue={}'.format(
         avail_red, avail_blue))
 
     if avail_red > avail_blue:

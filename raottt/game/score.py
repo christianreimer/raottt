@@ -211,8 +211,9 @@ class Score(object):
         for this player"""
         delta = sum([r['delta'] for r in MongoDb.updates.find({'pid': pid})]) 
         MongoDb.updates.delete_many({'pid': pid})
-        logging.info('Player {} had a score change of {} waiting'.format(
-            pid, delta))
+        if delta:
+            logging.info('Player {} had a score change of {} waiting'.format(
+                pid, delta))
         return delta
 
     @classmethod
