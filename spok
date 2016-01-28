@@ -163,6 +163,8 @@ def main():
     blue = ComputerPlayer(raottt.Player.load(pid_blue).dumpd())
 
     while True:
+        time_start = datetime.datetime.now()
+
         # Perform moves to keep the game running
         player, turns = player_and_turns(red, blue)
         logging.info('Spok should take {} turns for the {} team'.format(
@@ -180,7 +182,14 @@ def main():
         if min_stock > stock:
             create_games(num_games, lower, upper)
 
-        time.sleep(sleep_sec)
+        time_elapsed = datetime.datetime.now() - time_start
+        if time_elapsed.seconds > sleep_sec:
+            logging.error('Spok took {} sec to complete an itration'.format(
+                time_elapsed.seconds))
+
+        time_to_sleep = max(1, sleep_sec - time_elapsed.seconds)
+        logging.debug('Spok sleeping for {} seconds'.format(time_to_sleep))
+        time.sleep(time_to_sleep)
 
 
 if __name__ == '__main__':
