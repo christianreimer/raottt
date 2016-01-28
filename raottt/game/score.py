@@ -157,7 +157,7 @@ class Score(object):
         if winner == color:
             one_third_of_value = math.ceil(1/3 * self.state['value'])
             score_change += max(one_third_of_value, VALUE_WINNING_MOVE)
-            self.state['value'] -= score_change
+            # self.state['value'] -= score_change
         
         logging.debug('Score after_move change {}'.format(score_change))
         return score_change
@@ -211,6 +211,22 @@ class Score(object):
         for this player"""
         delta = sum([r['delta'] for r in MongoDb.updates.find({'pid': pid})]) 
         MongoDb.updates.delete_many({'pid': pid})
-        logging.info('Player {} had a score change of {} waiting'.format(
-            pid, delta))
+        if delta:
+            logging.info('Player {} had a score change of {} waiting'.format(
+                pid, delta))
         return delta
+
+    @classmethod
+    def update_global_score(cls, color, won):
+        """Update the global scores"""
+        logging.debug('Update global score color {} won {}'.format(color, won))
+        MongoDb.score.update_one({'color': color},
+                                 {'$inc': {'turns': 1,
+                                           'wins': won and 1 or 0}})
+
+    @classmethod
+    def get_global_score(cls):
+        """Return the global score"""
+        score_lst = [score for score in MongoDb.score.find()]
+        return score_lst
+

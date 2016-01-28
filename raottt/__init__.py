@@ -21,11 +21,10 @@ __author__ = "Christian Reimer"
 __version__ = "0.0.1"
 
 
-from util import logger
+from .util import logger
 logger.setup()
 
-from util.database import DatabaseConnection
-from game.game import Game
-from game.score import Score
-from player.player import Player
-
+from .util.database import DatabaseConnection
+from .game.game import Game
+from .game.score import Score
+from .player.player import Player

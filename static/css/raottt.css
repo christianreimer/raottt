@@ -137,9 +137,22 @@ html, body {
 	background-color: White;
 	border: 1px solid Black;
 	font-family: Verdana;
-	font-size: 14px;
-	line-height: 18px;
+	font-size: 18px;
+	line-height: 24px;
 	padding: 20px;
 	margin: 20px;
 	width: 400px;
+	min-height: 200px;
+}
+
+#CloseButton {
+	border-radius: 3px;
+	height: 40px;
+	background-color: gray;	
+	font-family: Arial;
+	font-size: 24px;
+	text-align: center;
+	color: white;
+	padding-top:16px;
+	/*margin-bottom: 10px;*/
 }

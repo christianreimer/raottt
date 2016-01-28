@@ -11,55 +11,30 @@ Once the time is up the player is forces to move that piece. This ensure a
 player does not occupy the center spot for the entire game, and adds another
 dimension for the player to consider.
 
+In addition to the above rule modifications, any one player will participate in
+many different games at the same time. Essentially, a game is picked at random,
+a player takes a turn, and then another game is picked. This goes on
+indefinitely.
 
-### To Install
-```bash
-$ git clone https://github.com/christianreimer/raottt.git
-$ cd raottt
-$ pip install -r requirements.txt
+
+## Points
+Since the game never ends, players are awarded points to track their progress.
+The scores are calculated as follows:
+
+```
+Points awarded after each move
+
++1 for every move
++1 if the move improved the value of the board for the player's color
+-1 if the move lowered the value of the board for the player's color
++2 if the move changed the player's color from being behind to ahead
+-1 if the move changed the player's color from being ahead to behind
++5 if this was the winning move
+-3 if the game is lost on the next move
 ```
 
-### To Play
-
-Computer vs Computer (just sit back and relax ...)
-```bash
-$ ./play --show
-```
-
-Human vs Computer (if you want to join ...)
-```bash
-$ ./play --blue=Human --red=Computer --show
-```
-
-### REST Api
-
-To create a new user profile
-```JSON
-GET raottt/game/user
-```
-
-To get a game to play (take a turn) for a given unique player id
-```JSON
-GET raottt/game/upid
-{
-	secret: 'user_secret'
-}
-```
-
-To return the move made for a given game
-```json
-PUT raott/move/upid
-{
-	secret: 'user_secret',
-	move_from: <position>,
-	move_to: <position>
-}
-
-To get the current stats for a given user
-```JSON
-GET raott/player/upid
-{
-	secret: 'user_secret'
-}
-
-
+When a game is won, the value of the game (which is determined based on all the 
+moves made for that game) is spit out among all the players that participated. 
+The player are awarded points based on the color they played for (the loosing
+color has points subtracted), and in proportion to the number of moves the
+player made in that game.

@@ -4,6 +4,8 @@ var gameId = undefined;
 var sizes = undefined;
 var playerColor = undefined;
 var playerData = undefined;
+var instructions = undefined;
+
 
 function raottt() {
     // $.removeCookie('token');
@@ -22,7 +24,7 @@ function raottt() {
 
     positionBoard(sizes);
 
-    getUserToken().pipe(resetBoard);
+    fetchUser().pipe(sayHello).pipe(resetBoard);
 }
 
 
@@ -32,11 +34,12 @@ function setupRestInterface() {
     // restClient = new $.RestClient('http://66.108.32.139:8888/');
     restClient.add('game');
     restClient.add('player');
+    restClient.add('score');
 }
 
 
-function getUserToken() {
-    console.log("getUserToken called")
+function fetchUser() {
+    console.log("fetchUser called")
 
     var deferred = $.Deferred();
     var token = $.cookie('token');
@@ -48,11 +51,9 @@ function getUserToken() {
         request.done(function(data) {
             userToken = data.token;
             playerColor = data.color;
-
-            showPopup(returnGreeting(data.name, data.color, data.score));
-            updateScore(data);      
-            playerData = data;      
-            deferred.resolve(data.token);
+            playerData = data;
+            $.cookie('token', data.token, {expires: 7});
+            deferred.resolve(data);
         });
     } else {
         // New user
@@ -61,25 +62,34 @@ function getUserToken() {
         request.done(function(data){
             userToken = data.token;
             playerColor = data.color;
-
-            showPopup(firstTimeGreeting(data.name, data.color));
-            updateScore(data);
             playerData = data;
-            $.cookie('token', data.token);
-            deferred.resolve(data.token);
+            $.cookie('token', data.token, {expires: 7});
+            deferred.resolve(data);
         });
     }
 
     return deferred.promise();
 }
 
+
+function sayHello(data) {
+    console.log('sayHello called with %o', data);
+
+    if(data.returning) {
+        showPopup(returnGreeting(data.name, data.color, data.score));
+    }
+    else {
+        showPopup(firstTimeGreeting(data.name, data.color));
+    }
+
+    updateScore(data);   
+    return data.token;       
+}
+
+
 function getGame(token) {
     console.log("getGame called with token %o", token);
     var deferred = $.Deferred();
-
-    // if($.cookie('game')) {
-    //  deferred.resolve($.cookie('game'));
-    // }
 
     if(!token) {
         alert("Why are we getting here???");
@@ -87,11 +97,24 @@ function getGame(token) {
 
     var request = restClient.game.read(token);
     request.done(function(data){
-        // $.cookie('game', data.token);
         gameId = data.ugid;
         playerColor = data.nextPlayer;
+        instructions = data.instructions;
 
         console.log('getGame returned %o', data);
+        deferred.resolve(data);
+    });
+
+    return deferred.promise();
+}
+
+function getScore(token) {
+    console.log("getScore called with token %o", token);
+    var deferred = $.Deferred();
+
+    var request = restClient.score.read(token);
+    request.done(function(data){
+        console.log('getScore returned %o', data);
         deferred.resolve(data);
     });
 
@@ -147,9 +170,7 @@ function resetBoard(token) {
     getGame(token).pipe(
         layoutBoard).pipe(
             addPieces).pipe(
-                scalePieces).pipe(
-                    setupInteraction).pipe(
-                        updateScore);
+                setupInteraction);
 }
 
 
@@ -212,20 +233,6 @@ function scalePiece(piece) {
     piece.css("height", sizes.tile - sizes.padding);
     piece.css("font-size", sizes.font);
     piece.css("border-radius", sizes.radius);    
-}
-
-
-function scalePieces(data) {
-    console.log("scalePieces called");
-    $(".piece").each(function(i) {
-        // scalePiece($(this));
-        // $(this).css("width", sizes.tile - sizes.padding);
-        // $(this).css("height", sizes.tile - sizes.padding);
-        // $(this).css("font-size", sizes.font);
-        // $(this).css("border-radius", sizes.radius);
-    });
-
-    return data;
 }
 
 
@@ -342,9 +349,21 @@ function setupInteraction(data) {
 
 
 function showScore() {
-    var html = "<p>Your have scored " + playerData.score + " points<br>" +
-               "You have participated in " + playerData.games + " games <br>" +
-               "and made a total of " + playerData.moves + " moves</p>";
+    getScore(userToken).pipe(function (data) {
+        var html = "<p>Your have scored a total of " + data.score + " points. " +
+                   "You have participating in " + data.games + " games, and " +
+                   "made a total of " + data.turns + " moves.</p>" +
+                   "<p>In total, " + data.totalTurns + " moves have been made. " +
+                   "The Red team has won " + data.redWins + " games, while the " +
+                   "Blue team has won " + data.blueWins + ".</p>";
+
+        showPopup(html);
+    });
+}
+
+
+function showInstructions() {
+    var html = "<p>" + instructions + "<p>";
     showPopup(html);
 }
 
@@ -394,8 +413,12 @@ function setupTiles() {
 
 
 function updateScore(data) {
+    var txt = $('#ScoreNumber').text();
+    var num = parseInt(txt.replace(',', ''));
+
     $('#ScoreNumber').numerator({
-        duration: 500,
+        duration: 750,
         delimiter: ',',
-        toValue: data.score});
+        toValue: data.score,
+        fromValue: num});
 }

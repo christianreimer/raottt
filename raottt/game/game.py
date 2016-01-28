@@ -6,6 +6,7 @@ specifically the set of users that have previousely played this game, and the
 change in board value.
 """
 
+import datetime
 import uuid
 import random
 import logging
@@ -22,16 +23,18 @@ MongoDb = DatabaseConnection()
 
 class Game(object):
     """Tracks the current state as well as the history of the game."""
-    def __init__(self, gid, next_color, board, score, inplay):
+    def __init__(self, gid, next_color, board, score, inplay, checkout, player):
         self.gid = gid
         self.next_color = next_color
         self.board = board
         self.score = score
         self.inplay = inplay
+        self.checkout = checkout
+        self.player = player
 
     def __str__(self):
-        return 'Game:{} next:{} inplay:{}'.format(
-            self.gid, self.next_color, self.inplay)
+        return 'Game:{} next:{} inplay:{} checkout:{}'.format(
+            self.gid, self.next_color, self.inplay, self.checkout)
 
     @classmethod
     def new(cls, first_player):
@@ -40,14 +43,33 @@ class Game(object):
         next_color = first_player
         board = Board()
         score = Score.new(gid)
-        game = cls(gid, next_color, board, score, False)
+        game = cls(gid, next_color, board, score, False, None, None)
         logging.debug('New {}'.format(game))
         return game
 
     @classmethod
-    def load(cls, gid):
+    def load(cls, gid, validate=False, player=None):
         """Load the game with specified id from the database"""
         game = cls.loadd(MongoDb.game.find_one({'gid': gid}))
+
+        if not game:
+            raise KeyError('gid {} not found in database'.format(gid))
+
+        if validate:
+            game_pid = game.player
+
+            if not game_pid == player.pid:
+                err_msg = 'Player {} does not have game {} reserved'.format(
+                    pid, gid)
+                logging.error(err_msg)
+                raise ValueError(err_msg)
+
+            if not game.inplay:
+                err_msg = ('Player {} tried to load game {} which is '
+                           'not checked out'.format(player.pid, gid))
+                logging.error(err_msg)
+                raise ValueError(err_msg)
+
         logging.debug('Loaded {}'.format(game))
         return game
 
@@ -63,21 +85,31 @@ class Game(object):
         logging.debug('Deleted {}'.format(self.__str__()))
 
     @classmethod
-    def pick(cls, player):
+    def pick(cls, player, create_if_needed=True):
         """Picks an existing game that can be played by the specified player.
         If no suitable game is found, a new one will be created and returned."""
         gid_lst = [record['gid'] for record in \
-            MongoDb.game.find({'next_color': player.color})]
+            MongoDb.game.find({'next_color': player.color, 'inplay': False})]
 
         logging.debug('{} can pick from {} possibilities'.format(
             player.color, len(gid_lst)))
 
-        if len(gid_lst) < 5:
+        if len(gid_lst) < 5 and create_if_needed:
             gid_lst += create_new_games(5 - len(gid_lst), player.color)
 
-        gid = random.choice(gid_lst)
-        game = cls.load(gid)
-        game.inplay = True
+        try:
+            gid = random.choice(gid_lst)
+        except IndexError:
+            raise IndexError('No games ready to play for color {}'.format(
+                player.color))
+
+        utc_now = datetime.datetime.utcnow()
+
+        game = cls.loadd(MongoDb.game.find_and_modify(
+            query={'gid': gid}, update={'$set':{'inplay': True,
+                                                'checkout': utc_now,
+                                                'player': player.pid}}))
+
         logging.debug('Picked {} for pid {}'.format(game, player.pid))
         return game
 
@@ -89,7 +121,9 @@ class Game(object):
         board = Board.loadd(state['board'])
         score = Score.loadd(state['score'])
         inplay = state['inplay']
-        return cls(gid, next_color, board, score, inplay)
+        checkout = state['checkout']
+        player = state['player']
+        return cls(gid, next_color, board, score, inplay, checkout, player)
 
     def dumpd(self):
         """Dump game state as a dict"""
@@ -97,7 +131,9 @@ class Game(object):
                 'next_color': self.next_color,
                 'board': self.board.dumpd(),
                 'score': self.score.dumpd(),
-                'inplay': self.inplay}
+                'inplay': self.inplay,
+                'checkout': self.checkout,
+                'player': self.player}
 
     def dumpjs(self):
         """Return game state as dict suitable for js"""
@@ -125,8 +161,7 @@ class Game(object):
         ratio = self.board.value_ratio(color)
         winner = self.board.winner()
 
-        player.score += self.score.after_move(score, ratio, winner, color, pid)
-        player.moves_made += 1
+        score_change = self.score.after_move(score, ratio, winner, color, pid)
         if self.score.moves_made_by_player(player) == 1:
             player.games_participated_in += 1
 
@@ -134,10 +169,18 @@ class Game(object):
         self.board.age(opp_color)
         self.next_color = opp_color
 
-    def cleanup(self):
+        # Update global scores to record the move was made
+        Score.update_global_score(color, winner == color)
+
+        if winner:
+            logging.info('Game {} won by pid {}'.format(self.gid, player.pid))
+
+        return score_change
+
+    def cleanup(self, winner):
         """Called after a game has been won"""
-        logging.debug('Cleanup {}'.format(self.__str__()))
-        _ = self.score.post_game(self.next_color)
+        _ = self.score.post_game(winner)
+        logging.debug('Game cleanup {}'.format(self.__str__()))
         self.delete()
 
     def show(self):
