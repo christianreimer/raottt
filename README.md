@@ -38,3 +38,39 @@ moves made for that game) is spit out among all the players that participated.
 The player are awarded points based on the color they played for (the loosing
 color has points subtracted), and in proportion to the number of moves the
 player made in that game.
+
+
+# Playing
+
+There are several different ways to interact with the game. The simplest one is
+via the console.
+
+### Console
+The game can be played from the console
+```bash
+$ ./play --help
+Simple harness that will run the TTT game. Can do any of Human vs Human,
+Human vs Computer, or Computer vs Computer.
+
+Usage: play [--blue=<b>] [--red=<r>] [--games=<n>] [--show]
+
+Options:
+    --blue=<b>      Blue player type (Human or Computer) [default: Computer]
+    --red=<r>       Red plater type (Human or Computer) [default: Computer]
+    --games=<n>     Number of games to play [default: 1]
+    --show          Show boards between turns [default: false]
+```
+
+Simply try ```./play --show``` to get started ...
+
+### REST API
+
+Describe REST API here
+
+### Browser
+
+Describe the jquery based web interface here
+
+## Spok
+
+Describe the purpose of spok here
