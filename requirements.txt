@@ -7,8 +7,6 @@ docopt==0.6.2
 Flask==0.10.1
 Flask-RESTful==0.3.1
 gnureadline==6.3.3
-ipython==4.0.1
-ipython-genutils==0.1.0
 itsdangerous==0.24
 Jinja2==2.7.3
 lazy-object-proxy==1.2.1
@@ -19,7 +17,6 @@ pexpect==4.0.1
 pickleshare==0.5
 ptyprocess==0.5
 py==1.4.31
-pylint==1.5.2
 pymongo==3.2
 pytest==2.8.5
 python-dateutil==2.4.2

@@ -17,7 +17,7 @@ a player takes a turn, and then another game is picked. This goes on
 indefinitely.
 
 
-## Points
+### Points
 Since the game never ends, players are awarded points to track their progress.
 The scores are calculated as follows:
 
@@ -40,7 +40,7 @@ color has points subtracted), and in proportion to the number of moves the
 player made in that game.
 
 
-# Playing
+## Playing
 
 There are several different ways to interact with the game. The simplest one is
 via the console.
