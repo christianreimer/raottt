@@ -125,7 +125,6 @@ def create():
 
 def init():
     """Init database and users"""
-    database.nuke(True)
     database.init()
 
     red = ComputerPlayer.new('Red')
