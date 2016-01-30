@@ -29,10 +29,7 @@ function raottt() {
 
 
 function setupRestInterface() {
-    restClient = new $.RestClient('http://0.0.0.0:5000/');
-    // restClient = new $.RestClient('http://127.0.0.1:8888/');
-    // restClient = new $.RestClient('http://192.168.0.100:8888/');
-    // restClient = new $.RestClient('http://66.108.32.139:8888/');
+    restClient = new $.RestClient();
     restClient.add('game');
     restClient.add('player');
     restClient.add('score');

@@ -2,12 +2,17 @@
 Mongo Connection
 """
 
+import os
+
 import pymongo
+
+
+MONGO_URL = os.environ.get('MONGO_URL', 'mongodb://localhost:27017/')
 
 
 def DatabaseConnection(collection='raottt'):
     """Setup connection to MongoDb"""
-    return pymongo.MongoClient()[collection]
+    return pymongo.MongoClient(MONGO_URL)[collection]
 
 
 def nuke(yes_i_am_sure=False):
