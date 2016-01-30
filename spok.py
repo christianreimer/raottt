@@ -10,8 +10,8 @@ Options:
     --blue=<b>        Pic of the blue player
     --ttl=<t>         Seconds before a game is abandoned [default: 3600]
     --stock=<m>       Minimum number of available games [default: 25]
-    --frequency=<s>   How many sec to sleep between plays [default: 10]
-    --lower=<l>       Lower bound of rounds to play per game [default: 6]
+    --frequency=<s>   How many sec to sleep between plays [default: 60]
+    --lower=<l>       Lower bound of rounds to play per game [default: 4]
     --upper=<u>       Upper bound of rounds to play per game [default: 12]
     --games=<n>       Number of games to create when stock is low [default: 10]
 """
@@ -169,9 +169,10 @@ def main():
 
         # Perform moves to keep the game running
         player, turns = player_and_turns(red, blue)
-        logging.info('Spok should take {} turns for the {} team'.format(
-            turns, player.color))
-        take_turns(turns, player)
+        if turns > 1:
+            logging.info('Spok should take {} turns for the {} team'.format(
+                turns, player.color))
+            take_turns(turns, player)
 
         # Cleanup abandoned games
         cleanup(ttl)
