@@ -8,11 +8,9 @@ var instructions = undefined;
 
 
 function raottt() {
-    // $.removeCookie('token');
-
     // Overlay is used to blank out the board while getting a new game
     // from the server
-    $("#Overlay").hide(0);
+    $("#Overlay").show();
 
     // The REST interface back to the server.
     setupRestInterface();
@@ -168,7 +166,10 @@ function resetBoard(token) {
     getGame(token).pipe(
         layoutBoard).pipe(
             addPieces).pipe(
-                setupInteraction);
+                setupInteraction).pipe(
+                    function() {
+                        $("#Overlay").hide(0); 
+                    });
 }
 
 
@@ -349,8 +350,8 @@ function setupInteraction(data) {
 function showScore() {
     getScore(userToken).pipe(function (data) {
         var html = "<p>Your have scored a total of " + data.score + " points. " +
-                   "You have participating in " + data.games + " games, and " +
-                   "made a total of " + data.turns + " moves.</p>" +
+                   "You have participated in " + data.games + " games, and " +
+                   "made " + data.turns + " moves.</p>" +
                    "<p>In total, " + data.totalTurns + " moves have been made. " +
                    "The Red team has won " + data.redWins + " games, while the " +
                    "Blue team has won " + data.blueWins + ".</p>";

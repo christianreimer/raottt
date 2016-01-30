@@ -12,7 +12,10 @@ MONGO_URL = os.environ.get('MONGOLAB_URI', 'mongodb://localhost:27017/')
 
 def DatabaseConnection(collection='raottt'):
     """Setup connection to MongoDb"""
-    return pymongo.MongoClient(MONGO_URL).get_default_database()
+    try:
+    	return pymongo.MongoClient(MONGO_URL).get_default_database()
+    except:
+    	return pymongo.MongoClient(MONGO_URL)[collection]
 
 
 def nuke(yes_i_am_sure=False):
