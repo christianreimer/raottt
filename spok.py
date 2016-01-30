@@ -1,9 +1,7 @@
-#!/usr/bin/env python
-
 """
 Spok is a simple AI player in the raottt game.
 
-Usage: spok play --red=<r> --blue=<b> [--ttl=<t>] [--stock=<m>]
+Usage: spok play (--env | (--red=<r> --blue=<b>)) [--ttl=<t>] [--stock=<m>]
                 [--frequency=<s>] [--lower=<l>] [--upper=<u>] [--games=<n>]
        spok init
 
@@ -17,11 +15,11 @@ Options:
     --upper=<u>       Upper bound of rounds to play per game [default: 12]
     --games=<n>       Number of games to create when stock is low [default: 10]
 """
- 
 
 import datetime
 import logging
 import random
+import os
 import time
 
 from docopt import docopt
@@ -150,8 +148,13 @@ def main():
             print('Created red={} blue={}'.format(red.pid, blue.pid))
             return
 
-    pid_red = args['--red']
-    pid_blue = args['--blue']
+    if args['--env']:
+        pid_red = os.environ['SPOK_RED']
+        pid_blue = os.environ['SPOK_BLUE']
+    else:
+        pid_red = args['--red']
+        pid_blue = args['--blue']
+
     sleep_sec = int(args['--frequency'])
     ttl = int(args['--ttl'])
     min_stock = int(args['--stock'])
@@ -194,3 +197,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

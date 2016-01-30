@@ -48,7 +48,7 @@ def run_game(player1, player2, max_rounds, show=False):
         game.validate()
 
         print(Color.me(player.color, "{}'s Score: {}".format(
-            player.name, player.score)))
+                player.name, player.score)))
 
         if show:
             game.show()
@@ -67,12 +67,11 @@ def main():
                   'valid options are Human or Computer'.format(args[arg]))
             return
 
-    blue = HumanPlayer(state) if args['--blue'] == 'Human' else \
-           ComputerPlayer.new('Blue')
+    blue = HumanPlayer({'color': 'Blue'}) if args['--blue'] == 'Human' else \
+        ComputerPlayer.new('Blue')
 
-    red = HumanPlayer(state) if args['--red'] == 'Human' else \
-          ComputerPlayer.new('Red')
-
+    red = HumanPlayer({'color': 'Red'}) if args['--red'] == 'Human' else \
+        ComputerPlayer.new('Red')
 
     for _ in range(int(args["--games"])):
         game = run_game(blue, red, 999999, args['--show'])
@@ -81,3 +80,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

@@ -173,7 +173,8 @@ class Game(object):
         Score.update_global_score(color, winner == color)
 
         if winner:
-            logging.info('Game {} won by pid {}'.format(self.gid, player.pid))
+            logging.info('Game {} won by {} pid {}'.format(
+                self.gid, player.color, player.pid))
 
         return score_change
 
