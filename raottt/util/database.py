@@ -7,7 +7,7 @@ import os
 import pymongo
 
 
-MONGO_URL = os.environ.get('MONGO_URL', 'mongodb://localhost:27017/')
+MONGO_URL = os.environ.get('MONGOLAB_URI', 'mongodb://localhost:27017/')
 
 
 def DatabaseConnection(collection='raottt'):
