@@ -10,7 +10,7 @@ var instructions = undefined;
 function raottt() {
     // Overlay is used to blank out the board while getting a new game
     // from the server
-    $('html').loader('show', {image: '../images/loading.gif'});
+    spinner(true);
 
     // The REST interface back to the server.
     setupRestInterface();
@@ -167,9 +167,7 @@ function resetBoard(token) {
         layoutBoard).pipe(
             addPieces).pipe(
                 setupInteraction).pipe(
-                    function() {
-                        $('html').loader('hide');
-                    });
+                    spinner(false));
 }
 
 
@@ -272,7 +270,8 @@ function calculatePosition(i) {
 
 
 function processMove(color, source, target) {
-    $('html').loader('show', {image: '../images/loading.gif'});
+    spinner(true);
+
     console.log(color + " moved from " + source + " to " + target);
 
     var obj = {token: userToken,
@@ -369,7 +368,7 @@ function showInstructions() {
 function showPopup(data) {
     console.log("showPopup called");
 
-    $('html').loader('hide');
+    spinner(false);
     $("#WelcomeText").html(data);
     $("#welcomePopup").popup('show');
 }
@@ -419,4 +418,19 @@ function updateScore(data) {
         delimiter: ',',
         toValue: data.score,
         fromValue: num});
+}
+
+
+function spinner(show) {
+    if(show) {
+        $.LoadingOverlay("show", {
+            image: "",
+            fontawesome: "fa fa-spinner fa-spin"});
+
+        // $('html').loader('show', {image: '../images/loading.gif'});
+    }
+    else {
+        $.LoadingOverlay("hide");
+        // $('html').loader('hide');
+    }
 }
