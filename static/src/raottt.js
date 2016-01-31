@@ -72,10 +72,10 @@ function sayHello(data) {
     console.log('sayHello called with %o', data);
 
     if(data.returning) {
-        showPopup(returnGreeting(data.name, data.color, data.score));
+        showPopup(generateText.returnGreeting(data.name, data.color, data.score));
     }
     else {
-        showPopup(firstTimeGreeting(data.name, data.color));
+        showPopup(generateText.firstTimeGreeting(data.name, data.color));
     }
 
     updateScore(data);   
@@ -347,60 +347,26 @@ function setupInteraction(data) {
 
 function showScore() {
     getScore(userToken).pipe(function (data) {
-        var html = "<p>Your have scored a total of " + data.score + " points. " +
-                   "You have participated in " + data.games + " games, and " +
-                   "made " + data.turns + " moves.</p>" +
-                   "<p>In total, " + data.totalTurns + " moves have been made. " +
-                   "The Red team has won " + data.redWins + " games, while the " +
-                   "Blue team has won " + data.blueWins + ".</p>";
-
-        showPopup(html);
+        showPopup(generateText.scoreText(data));
     });
 }
 
 
 function showInstructions() {
-    var html = "<p>" + instructions + "<p>";
-    showPopup(html);
+    showPopup(generateText.instructionsText(instructions));
 }
 
 
 function showPopup(data) {
     console.log("showPopup called");
 
-    var maxWidth = $(window).width() - 30;
-    maxWidth = maxWidth > 350 ? 350 : maxWidth;
-
     spinner(false);
+    
+    var maxWidth = $(window).width() - 10;
+    maxWidth = maxWidth > 500 ? 500 : maxWidth;
+    $("#welcomePopup").css( "maxWidth", maxWidth + "px" );
     $("#WelcomeText").html(data);
     $("#welcomePopup").popup('show');
-    $("#welcomePopup").css( "maxWidth", maxWidth + "px" );
-}
-
-
-function firstTimeGreeting(name, color) {
-    var txt = "<h3>Welcome to Random Acts Of Tic Tac Toe</h3>" +
-              "<p>I don't think I have seen you before... I shall call you " + 
-              "<b>" + name + "</b> and you will play for the " + 
-              "<font style='color:" + color + ";'><b>" + color + "</b></font> team.</p>" +
-              "<p>If you want a different name, to be able to play across devices, " + 
-              "or if you want to play for a specific color, then you will have to login " +
-              "with Twitter.</p>" +
-              "<p>You can click the <font style='color:green;'><b>?</b></font> " +
-              "at any time for instructions.</p>";
-    return txt;
-}
-
-function returnGreeting(name, color, score) {
-    var txt = "Welcome back <b>" + name + "</b> (remember that I gave you a name when " +
-              "you first stopped by?).</p>" + 
-              "<p>You are still playing for the " + 
-              "<font style='color:" + color + ";'><b>" + color + "</b></font> team. " + 
-              "You have <b>" + score + "</b> points (way to go!)</p>" + 
-              "<p>You can login with Twitter if you want a different name or team, and remember that " + 
-              "you can click the <font style='color:green;'><b>?</b></font> " +
-              "at any time for instructions.</p>";
-    return txt;
 }
 
 
