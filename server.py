@@ -23,7 +23,6 @@ from raottt.util import adapter
 
 app = flask.Flask(__name__, static_url_path='')
 api = Api(app)
-print(app)
 
 
 def oh_no():
