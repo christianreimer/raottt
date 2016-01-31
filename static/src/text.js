@@ -16,7 +16,7 @@ var generateText = {
               "<font style='color:" + color + ";'><b>" + color + "</b></font> team. " + 
               "You have <b>" + score + "</b> points (way to go!)</p>" + 
               "<p>You can login with Twitter if you want a different name or team, and remember that " + 
-              "you can click the <font style='color:green;'><b>?</b></font> " +
+              "you can click the <span class='green-mini-button'><b>?</b></span> " +
               "at any time for instructions.</p>";
     },
 
@@ -51,7 +51,7 @@ var generateText = {
                "<li>When a game is won (or lost), all the players who particpiated in that game " +
                "will receive points (or loose points) depending on their contribution to the game</li>" +
                "</ul></p><p>These instructions, along with hints, can be access at any point via the " +
-               "<font style='color:green;'><b>?</b></font> button on at the top of the screen.</p>";
+               "<span class='green-mini-button'><b>?</b></span> button on at the top of the screen.</p>";
     }
 };
 

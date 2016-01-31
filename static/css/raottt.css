@@ -142,3 +142,11 @@ html, body {
 	color: white;
 	padding-top:16px;
 }
+
+.green-mini-button {
+	background-color: green;
+	border-radius: 2px;
+	color: white;
+	padding-left: 6px;
+	padding-right: 6px;
+}
