@@ -381,19 +381,19 @@ function firstTimeGreeting(name, color) {
               "<font style='color:" + color + ";'><b>" + color + "</b></font> team.</p>" +
               "<p>If you want a different name, to be able to play across devices, " + 
               "or if you want to play for a specific color, then you will have to login " +
-              "by clicking on the twitter icon.</p>" +
+              "with Twitter.</p>" +
               "<p>You can click the <font style='color:green;'><b>?</b></font> " +
               "at any time for instructions.</p>";
     return txt;
 }
 
 function returnGreeting(name, color, score) {
-    var txt = "Welcome back " + name + " (remember that I gave you a name when " +
+    var txt = "Welcome back <b>" + name + "</b> (remember that I gave you a name when " +
               "you first stopped by?).</p>" + 
               "<p>You are still playing for the " + 
               "<font style='color:" + color + ";'><b>" + color + "</b></font> team. " + 
               "You have <b>" + score + "</b> points (way to go!)</p>" + 
-              "<p>You can still login if you want more control, and remember that " + 
+              "<p>You can login with Twitter if you want a different name or team, and remember that " + 
               "you can click the <font style='color:green;'><b>?</b></font> " +
               "at any time for instructions.</p>";
     return txt;

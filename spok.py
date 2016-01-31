@@ -1,9 +1,10 @@
 """
 Spok is a simple AI player in the raottt game.
 
-Usage: spok play (--env | (--red=<r> --blue=<b>)) [--ttl=<t>] [--stock=<m>]
-                [--frequency=<s>] [--lower=<l>] [--upper=<u>] [--games=<n>]
-       spok init
+Usage: spok.py play (--env | (--red=<r> --blue=<b>)) [--ttl=<t>] [--stock=<m>]
+                    [--frequency=<s>] [--lower=<l>] [--upper=<u>] [--games=<n>]
+       spok.py init
+       spok.py nuke
 
 Options:
     --red=<r>         Pid of the red player
@@ -139,13 +140,17 @@ def main():
     """main"""
     args = docopt(__doc__)
     
-    if args['init']:
-        msg = 'Are you sure you want to init (all data will be erased): '
+    if args['nuke']:
+        msg = 'Are you sure you want to nuke the database: '
         answer = input(msg)
         if answer.upper() in ('YES', 'Y'):
-            red, blue = init()
-            print('Created red={} blue={}'.format(red.pid, blue.pid))
-            return
+            database.nuke(True)
+        return
+
+    if args['init']:
+        red, blue = init()
+        print('Created red={} blue={}'.format(red.pid, blue.pid))
+        return
 
     if args['--env']:
         pid_red = os.environ['SPOK_RED']
