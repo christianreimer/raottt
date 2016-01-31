@@ -56,11 +56,9 @@ class Game(object):
             raise KeyError('gid {} not found in database'.format(gid))
 
         if validate:
-            game_pid = game.player
-
-            if not game_pid == player.pid:
+            if not gid == player.pid:
                 err_msg = 'Player {} does not have game {} reserved'.format(
-                    pid, gid)
+                    player.pid, gid)
                 logging.error(err_msg)
                 raise ValueError(err_msg)
 

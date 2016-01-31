@@ -10,7 +10,7 @@ var instructions = undefined;
 function raottt() {
     // Overlay is used to blank out the board while getting a new game
     // from the server
-    $("#Overlay").show();
+    $('html').loader('show', {image: '../images/loading.gif'});
 
     // The REST interface back to the server.
     setupRestInterface();
@@ -150,7 +150,7 @@ function calculateSizeFactors(wWidth, wHeight)
 };
 
 function positionBoard(sizes) {
-        $("#Container").css("width", sizes.boardSize);
+        $("body").css("width", sizes.boardSize);
         $('#Board').css('width', sizes.boardSize);
         $('#Board').css('height', sizes.boardSize);
         $('#Board').css('top', 100);
@@ -168,7 +168,7 @@ function resetBoard(token) {
             addPieces).pipe(
                 setupInteraction).pipe(
                     function() {
-                        $("#Overlay").hide(0); 
+                        $('html').loader('hide');
                     });
 }
 
@@ -272,8 +272,7 @@ function calculatePosition(i) {
 
 
 function processMove(color, source, target) {
-    $('#Overlay').show();
-
+    $('html').loader('show', {image: '../images/loading.gif'});
     console.log(color + " moved from " + source + " to " + target);
 
     var obj = {token: userToken,
@@ -370,9 +369,9 @@ function showInstructions() {
 function showPopup(data) {
     console.log("showPopup called");
 
+    $('html').loader('hide');
     $("#WelcomeText").html(data);
     $("#welcomePopup").popup('show');
-    $("#Overlay").hide(0);
 }
 
 
