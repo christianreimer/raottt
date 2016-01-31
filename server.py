@@ -157,7 +157,7 @@ class API_Player(Resource):
 
     def post(self):
         """Create a new user"""
-        player = RESTPlayer.new(random.choice('Red', 'Blue'))
+        player = RESTPlayer.new(random.choice(('Red', 'Blue')))
         player.save()
         return flask.make_response(json.dumps({'token': player.pid,
                                                'name': player.name,
