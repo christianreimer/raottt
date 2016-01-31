@@ -23,15 +23,16 @@
 
       </header>
       <section>
-        <h3>
-<a id="welcome" class="anchor" href="#welcome" aria-hidden="true"><span class="octicon octicon-link"></span></a>Random Acts of Tic Tac Toe</h3>
+        <h1>
+<a id="welcome" class="anchor" href="#welcome" aria-hidden="true"><span class="octicon octicon-link"></span></a>Random Acts of Tic Tac Toe</h1>
 
 <h2>Description</h2>
 <p>
 This is a modified version of Tic Tac Toe (Noughts and Crosses, Xs and Os) where each player only gets 3 pieces. Once a player has placed all pieces on the board, subsequent moves are made by moving a piece to an empty spot. Thus, the game continues on and could -- in theory -- go on forever.
-
+</p>
+<p>
 As an added twist, each piece can only remain in the same spot for 5 rounds. Once the time is up the player is forces to move that piece. This ensure a player does not occupy the center spot for the entire game, and adds another dimension for the player to consider.
-
+</p>
 In addition to the above rule modifications, any one player will participate in many different games at the same time. Essentially, a game is picked at random, a player takes a turn, and then another game is picked. This goes on indefinitely.
 </p>
 
@@ -39,8 +40,9 @@ In addition to the above rule modifications, any one player will participate in 
 <p>
 The game play never ends; new games are automatically created to ensure a player 
 always have more games to participate in. So to track progress, players are awarded points based on the moves they perform. For each move, the scores are calculated as follows:
+</p>
 
-<code>
+<pre>
 +1 for every move
 +1 if the move improved the value of the board for the player's color
 -1 if the move lowered the value of the board for the player's color
@@ -48,8 +50,9 @@ always have more games to participate in. So to track progress, players are awar
 -1 if the move changed the player's color from being ahead to behind
 +5 if this was the winning move
 -3 if the game is lost on the next move
-</code>
+</pre>
 
+<p>
 When a game is won, the value of the game (which is determined based on all the moves made for that game) is spit out among all the players that participated. The player are awarded points based on the color they played for (the loosing color has points subtracted), and in proportion to the number of moves the player made in that game.
 </p>
 
