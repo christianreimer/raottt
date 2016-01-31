@@ -368,9 +368,13 @@ function showInstructions() {
 function showPopup(data) {
     console.log("showPopup called");
 
+    var maxWidth = $(window).width() - 30;
+    maxWidth = maxWidth > 350 ? 350 : maxWidth;
+
     spinner(false);
     $("#WelcomeText").html(data);
     $("#welcomePopup").popup('show');
+    $("#welcomePopup").css( "maxWidth", maxWidth + "px" );
 }
 
 

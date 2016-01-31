@@ -141,8 +141,6 @@ html, body {
 	line-height: 24px;
 	padding: 20px;
 	margin: 20px;
-	width: 325px;
-	min-height: 200px;
 }
 
 #CloseButton {
@@ -150,9 +148,8 @@ html, body {
 	height: 40px;
 	background-color: gray;	
 	font-family: Arial;
-	font-size: 24px;
+	font-size: 22px;
 	text-align: center;
 	color: white;
 	padding-top:16px;
-	/*margin-bottom: 10px;*/
 }
