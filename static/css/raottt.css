@@ -122,6 +122,7 @@ html, body {
 }
 
 #welcomePopup {
+	transition: all 0.3s;
 	background-color: White;
 	border: 1px solid Black;
 	font-family: Verdana;
