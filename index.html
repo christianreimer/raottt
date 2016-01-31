@@ -42,18 +42,18 @@ The game play never ends; new games are automatically created to ensure a player
 always have more games to participate in. So to track progress, players are awarded points based on the moves they perform. For each move, the scores are calculated as follows:
 </p>
 
-<pre>
-+1 for every move
-+1 if the move improved the value of the board for the player's color
--1 if the move lowered the value of the board for the player's color
-+2 if the move changed the player's color from being behind to ahead
--1 if the move changed the player's color from being ahead to behind
-+5 if this was the winning move
--3 if the game is lost on the next move
-</pre>
+<ul>
+<li>+1 for every move</li>
+<li>+1 if the move improved the value of the board for the player's color</li>
+<li>-1 if the move lowered the value of the board for the player's color</li>
+<li>+2 if the move changed the player's color from being behind to ahead</li>
+<li>-1 if the move changed the player's color from being ahead to behind</li>
+<li>+5 if this was the winning move</li>
+<li>-3 if the game is lost on the next move</li>
+</ul>
 
 <p>
-When a game is won, the value of the game (which is determined based on all the moves made for that game) is spit out among all the players that participated. The player are awarded points based on the color they played for (the loosing color has points subtracted), and in proportion to the number of moves the player made in that game.
+When a game is won, the value of the game (which is determined based on all the moves made for that game) is spit out among all the players that participated. The players are awarded points based on the color they played for (players for the loosing color have points subtracted). The points are awarded in proportion to the number of moves the player made in that game.
 </p>
 
 <h3>
