@@ -362,7 +362,7 @@ function showPopup(data) {
 
     spinner(false);
     
-    var maxWidth = $(window).width() - 10;
+    var maxWidth = $(window).width();
     maxWidth = maxWidth > 500 ? 500 : maxWidth;
     $("#welcomePopup").css( "maxWidth", maxWidth + "px" );
     $("#WelcomeText").html(data);
