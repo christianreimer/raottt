@@ -26,7 +26,7 @@ from raottt.util import adapter
 
 app = flask.Flask(__name__, static_url_path='')
 app.config['RATELIMIT_STORAGE_URL'] = os.environ['REDISCLOUD_URL']
-limiter = Limiter(app, global_limits=["10 per minute"])
+limiter = Limiter(app, global_limits=["1 per second"])
 
 api = Api(app)
 
@@ -42,7 +42,6 @@ def oh_no():
 class API_Game(Resource):
     """Game API endpoint"""
 
-    @limiter.limit("1 per second")
     def get(self, uid):
         """Return a game that can be played by the player with pid"""
         logging.debug('API_Game.get {}'.format(uid))
@@ -62,7 +61,6 @@ class API_Game(Resource):
         game = Game.pick(player)
         return flask.make_response(json.dumps(adapter.enrich_message(game)))
 
-    @limiter.limit("1 per second")
     def put(self, uid):
         """Apply a move to the specified game"""
         logging.debug('API_Game.put {}'.format(flask.request.form))
@@ -141,6 +139,7 @@ class API_Game(Resource):
 class API_Player(Resource):
     """Player API endpoint"""
 
+    @limiter.limit("10 per minute")
     def get(self, uid):
         """Return the user specified by uid"""
         try:
