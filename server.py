@@ -14,8 +14,7 @@ import random
 import flask
 from flask.ext.restful import Resource
 from flask.ext.restful import Api
-from flask.ext.limiter import Limiter
-from flask.ext.limited import HEADERS
+from flask_limiter import Limiter
 
 from raottt import Game
 from raottt import Player
