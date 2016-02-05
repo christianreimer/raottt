@@ -26,8 +26,7 @@ from raottt.util import adapter
 
 app = flask.Flask(__name__, static_url_path='')
 app.config['RATELIMIT_STORAGE_URL'] = os.environ['REDISCLOUD_URL']
-limiter = Limiter(app, global_limits=["1 per second"])
-
+limiter = Limiter(app)
 api = Api(app)
 
 
@@ -42,6 +41,7 @@ def oh_no():
 class API_Game(Resource):
     """Game API endpoint"""
 
+    @limiter.limit('5 per second')
     def get(self, uid):
         """Return a game that can be played by the player with pid"""
         logging.debug('API_Game.get {}'.format(uid))
@@ -61,6 +61,7 @@ class API_Game(Resource):
         game = Game.pick(player)
         return flask.make_response(json.dumps(adapter.enrich_message(game)))
 
+    @limiter.limit('5 per second')
     def put(self, uid):
         """Apply a move to the specified game"""
         logging.debug('API_Game.put {}'.format(flask.request.form))
@@ -135,7 +136,6 @@ class API_Game(Resource):
                                                'score': player.score}))
 
 
-
 class API_Player(Resource):
     """Player API endpoint"""
 
@@ -160,7 +160,7 @@ class API_Player(Resource):
                                                'color': player.color,
                                                'score': player.score,
                                                'returning': 1}))
-    @limiter.limit('5 per minute')
+    @limiter.limit('10 per minute')
     def post(self):
         """Create a new user"""
         player = RESTPlayer.new(random.choice(('Red', 'Blue')))
@@ -175,6 +175,7 @@ class API_Player(Resource):
 class API_Score(Resource):
     """Score API endpoint"""
 
+    @limiter.limit('1 per second')
     def get(self, uid):
         """Return score information for this user"""
         player = Player.load(uid)
@@ -202,7 +203,7 @@ def root():
     """Route to serve the static index.html page"""
     return app.send_static_file('index.html')
 
+
 if __name__ == '__main__':
-    # app.run(host='0.0.0.0', debug=True, port=8888) # , port=8888, debug=True)
     app.run(debug=True, port=8888)
 
