@@ -346,6 +346,8 @@ function setupInteraction(data) {
 
 
 function showScore() {
+    spinner(true);
+
     getScore(userToken).pipe(function (data) {
         showPopup(generateText.scoreText(data));
     });
@@ -359,7 +361,6 @@ function showInstructions() {
 
 function showPopup(data) {
     console.log("showPopup called");
-
     spinner(false);
     
     var maxWidth = $(window).width();
