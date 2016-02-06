@@ -1,9 +1,11 @@
 var generateText = {
     firstTimeGreeting: function(name, color) {
         return "<h3>Welcome to Random Acts Of Tic Tac Toe</h3>" +
+
               "<p>I don't think I have seen you before! I will call you " + 
               "<b>" + name + "</b> and you will play for the " + 
-              "<font style='color:" + color + ";'><b>" + color + "</b></font> team.</p>" +
+              "<span class='help-text-" + color + "'>" + color + "</span> team.</p>" +
+
               "<p>If you want a different name, to be able to play across devices, " + 
               "or if you want to play for a specific color, then you will have to login " +
               "with Twitter.</p>" + this.instructionsText(undefined);
@@ -12,17 +14,23 @@ var generateText = {
     returnGreeting: function(name, color, score) {
         return "Welcome back <b>" + name + "</b> (remember that I gave you a name when " +
               "you first stopped by?).</p>" + 
+
               "<p>You are still playing for the " + 
-              "<font style='color:" + color + ";'><b>" + color + "</b></font> team. " + 
+              "<span class='help-text-" + color + "'>" + color + "</span> team. " + 
               "You have <b>" + score + "</b> points (way to go!)</p>" + 
-              "<p>You can login with Twitter if you want a different name or team, and remember that " + 
+
+              "<p>You can login with Twitter if you want a different name or color, and remember that " + 
               "you can click the <span class='green-mini-button'><b>?</b></span> " +
               "at any time for instructions.</p>";
     },
 
-    scoreText: function(data) {
-        return "<p>Your have scored a total of " + data.score + " points, by " +
+    scoreText: function(data, color) {
+        return "<p>You are playing for the " + 
+               "<span class='help-text-" + color + "'>" + color + "</span> team.</p>" +
+
+               "<p>Your have scored a total of " + data.score + " points, by " +
                "making " + data.turns + " moves in " + data.games + " games.</p>" +
+
                "<p>In total, " + data.totalTurns + " moves have been made. " +
                "The Red team has won " + data.redWins + " games, while the " +
                "Blue team has won " + data.blueWins + ".</p>";

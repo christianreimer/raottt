@@ -160,6 +160,7 @@ class API_Player(Resource):
                                                'color': player.color,
                                                'score': player.score,
                                                'returning': 1}))
+
     @limiter.limit('10 per minute')
     def post(self):
         """Create a new user"""

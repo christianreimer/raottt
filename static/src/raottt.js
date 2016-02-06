@@ -349,7 +349,7 @@ function showScore() {
     spinner(true);
 
     getScore(userToken).pipe(function (data) {
-        showPopup(generateText.scoreText(data));
+        showPopup(generateText.scoreText(data, playerColor));
     });
 }
 
@@ -364,7 +364,7 @@ function showPopup(data) {
     spinner(false);
     
     var maxWidth = $(window).width();
-    maxWidth = maxWidth > 500 ? 500 : maxWidth;
+    maxWidth = maxWidth > 500 ? 500 : maxWidth - 2;
     $("#welcomePopup").css( "maxWidth", maxWidth + "px" );
     $("#WelcomeText").html(data);
     $("#welcomePopup").popup('show');

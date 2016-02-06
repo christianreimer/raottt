@@ -150,3 +150,14 @@ html, body {
 	padding-left: 6px;
 	padding-right: 6px;
 }
+
+.help-text-Red {
+	color: red;
+	font-weight: bold;
+}
+
+.help-text-Blue {
+	color: blue;
+	font-weight: bold;
+}
+
