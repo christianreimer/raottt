@@ -194,9 +194,32 @@ class API_Score(Resource):
                         'blueWins': total_map['Blue']['wins']}))
 
 
+class API_Debug(Resource):
+    """Debug API endpoint"""
+
+    def get(self, uid):
+        """Return debug information about this game"""
+        try:
+            game = Game.load(uid)
+        except KeyError:
+            logging.error(
+                'API_Debug.get for unknown gid {}'.format(gid))
+            return flask.make_response(oh_no())
+
+        return flask.make_response(
+            json.dumps(
+                {'gid': game.gid,
+                 'value': game.score.value,
+                 'nextColor': game.next_color,
+                 'checkout': str(game.checkout),
+                 'player': game.player,
+                 'score': game.score.dumpd()}))
+
+
 api.add_resource(API_Game, '/game/', '/game/<string:uid>/')
 api.add_resource(API_Player, '/player/', '/player/<string:uid>/')
 api.add_resource(API_Score, '/score/', '/score/<string:uid>/')
+api.add_resource(API_Debug, '/debug/', '/debug/<string:uid>/')
 
 
 @app.route('/')

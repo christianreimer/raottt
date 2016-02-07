@@ -74,6 +74,22 @@ html, body {
 	padding-top:10px;
 }
 
+#Debug {
+	width: 50px;
+	height: 40px;
+	float: right;
+	border-radius: 3px;
+	background-color: gray;	
+	margin-right: 5px;		
+
+	font-family: Arial;
+	font-size: 24px;
+	font-weight: bold;
+	text-align: center;
+	color: white;
+	padding-top:10px;
+}
+
 #Login {
 	width: 100px;
 	height: 35px;
@@ -147,8 +163,10 @@ html, body {
 	background-color: green;
 	border-radius: 2px;
 	color: white;
-	padding-left: 6px;
-	padding-right: 6px;
+	/*padding-top: 2px;*/
+	padding-bottom: 2px;
+	padding-left: 4px;
+	padding-right: 4px;
 }
 
 .help-text-Red {

@@ -21,7 +21,7 @@ var generateText = {
               "You have <b>" + score + "</b> points (way to go!)</p>" + 
 
               "<p>You can login with Twitter if you want a different name or color, and remember that " + 
-              "you can click the <span class='green-mini-button'><b>?</b></span> " +
+              "you can click the <span class='green-mini-button'><i class='fa fa-info-circle'></i></span> " +
               "at any time for instructions.</p>";
     },
 
@@ -63,7 +63,7 @@ var generateText = {
                "<li>When a game is won (or lost), all the players who participated in that game " +
                "will receive points (or loose points) depending on their contribution to the game</li>" +
                "</ul></p><p>These instructions, along with hints, can be accessed at any point via the " +
-               "<span class='green-mini-button'><b>?</b></span> button on at the top of the screen.</p>";
+               "<span class='green-mini-button'><i class='fa fa-info-circle'></i></span> button on at the top of the screen.</p>";
     }
 };
 

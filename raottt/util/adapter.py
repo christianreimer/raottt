@@ -34,4 +34,7 @@ def enrich_message(game):
             'Drag any {} piece to any empty square.'.format(
                 to_client['nextPlayer']))
 
+    to_client['gameId'] = game.gid
+    to_client['gameValue'] = game.score.value
+
     return to_client

@@ -31,6 +31,7 @@ function setupRestInterface() {
     restClient.add('game');
     restClient.add('player');
     restClient.add('score');
+    restClient.add('debug');
 }
 
 
@@ -404,4 +405,40 @@ function spinner(show) {
         $.LoadingOverlay("hide");
         // $('html').loader('hide');
     }
+}
+
+
+function showDebug() {
+    spinner(true);
+
+    getDebug(gameId).pipe(function (data) {
+        var text = "<ul>";
+        for (var prop in data) {
+            if(prop === "score") {
+                continue;
+            }
+            text += "<li><b>" + prop + "</b> " + data[prop] +"</li>";
+        }
+
+        for (var prop in data.score) {
+            text += "<li><b>score " + prop + "</b> " + data[prop] +"</li>";   
+        }
+
+        text += "</ul>";
+        showPopup(text);
+    });
+}
+
+
+function getDebug(token) {
+    console.log("getDebug called with token %o", token);
+    var deferred = $.Deferred();
+
+    var request = restClient.debug.read(token);
+    request.done(function(data){
+        console.log('getDebug returned %o', data);
+        deferred.resolve(data);
+    });
+
+    return deferred.promise();
 }
