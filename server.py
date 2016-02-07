@@ -199,8 +199,10 @@ class API_Debug(Resource):
 
     def get(self, uid):
         """Return debug information about this game"""
+        logging.error('Debug gid {}'.format(uid))
         try:
             game = Game.load(uid)
+            game.show()
         except KeyError:
             logging.error(
                 'API_Debug.get for unknown gid {}'.format(gid))
