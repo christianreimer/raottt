@@ -28,6 +28,7 @@ app = flask.Flask(__name__, static_url_path='')
 app.config['RATELIMIT_STORAGE_URL'] = os.environ['REDISCLOUD_URL']
 limiter = Limiter(app)
 api = Api(app)
+app.secret_key = '0xDecafBad'
 
 
 def oh_no():
@@ -106,7 +107,7 @@ class API_Game(Resource):
 
         player.queue_move((source, target))
         score_change = game.make_move(player)
-        player.score += score_change
+        player.score += score_changey
         player.moves_made += 1
         player.save()
 
@@ -154,6 +155,8 @@ class API_Player(Resource):
         if score_change:
             player.score += score_change
             player.save()
+
+        flask.session['count'] = 0
 
         return flask.make_response(json.dumps({'token': player.pid,
                                                'name': player.name,
@@ -218,10 +221,54 @@ class API_Debug(Resource):
                  'score': game.score.dumpd()}))
 
 
+class API_Auth(Resource):
+    """Auth API Endpoint"""
+
+    self.twitter = OAuth1Service(
+        name='twitter',
+        consumer_key='Gj4uIVgztBtLcdZXquupij9ph',
+        consumer_secret='J4kraCJ2C8aXjtHQOPjviAzTZ9pCkx4m4JTvftjmRhoMHEke7h',
+        request_token_url='https://api.twitter.com/oauth/request_token',
+        authorize_url='https://api.twitter.com/oauth/authorize',
+        access_token_url='https://api.twitter.com/oauth/access_token',
+        base_url='https://api.twitter.com/1.1/'
+    )
+    
+    def get(self, uid):
+        token = flask.session.get('token', None)
+        if not token:
+            self.twitter_login()
+        else:
+            self.twitter_callback(flask.request.args)
+
+    def twitter_login(self):
+        token = self.twitter.get_request_token(
+            params={'oauth_callback': url_for('get', _external=True)})
+        flask.session['token'] = token
+        url = twitter.get_authorize_url(token[0])
+        print('Callback URL: '.format(url_for('get', _external=True)))
+        return flask.redirect(url)
+
+    def twitter_callback(self):
+        token = flask.session['token']
+        oauth_session = twitter.get_auth_session(
+            token[0],
+            token[1],
+            data={'oauth_verifier': request.args['oauth_verifier']}
+        )
+    
+        me = oauth_session.get('account/verify_credentials.json').json()
+        username = me.get('screen_name')
+        print('username:{}'.format(username))
+        return flask.make_response("Hello {}".format(username))
+
+
+
 api.add_resource(API_Game, '/game/', '/game/<string:uid>/')
 api.add_resource(API_Player, '/player/', '/player/<string:uid>/')
 api.add_resource(API_Score, '/score/', '/score/<string:uid>/')
 api.add_resource(API_Debug, '/debug/', '/debug/<string:uid>/')
+api.add_resource(API_Auth, '/auth/', '/auth/<string:uid>/')
 
 
 @app.route('/')

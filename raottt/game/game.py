@@ -181,7 +181,7 @@ class Game(object):
     def cleanup(self, winner):
         """Called after a game has been won"""
         _ = self.score.post_game(winner)
-        logging.debug('Game cleanup {}'.format(self.__str__()))
+        logging.info('Game cleanup {}'.format(self.__str__()))
         self.delete()
 
     def show(self):

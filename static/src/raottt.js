@@ -32,6 +32,7 @@ function setupRestInterface() {
     restClient.add('player');
     restClient.add('score');
     restClient.add('debug');
+    restClient.add('auth');
 }
 
 
@@ -437,6 +438,20 @@ function getDebug(token) {
     var request = restClient.debug.read(token);
     request.done(function(data){
         console.log('getDebug returned %o', data);
+        deferred.resolve(data);
+    });
+
+    return deferred.promise();
+}
+
+
+function login() {
+    console.log("loging called");
+    var deferred = $.Deferred();
+
+    var request = restClient.auth.read(userToken);
+    request.done(function(data){
+        console.log('login returned %o', data);
         deferred.resolve(data);
     });
 
