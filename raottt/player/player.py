@@ -28,7 +28,7 @@ class Player(object):
         if not state.get('color'):
             state['color'] = random.choice(['Blue', 'Red'])
         if not state.get('twitter_creds'):
-            state['twitter_creds'] = None
+            state['twitter_creds'] = False
         if not state.get('score'):
             state['score'] = 0
         if not state.get('moves_made'):
@@ -46,9 +46,14 @@ class Player(object):
         return player
 
     @classmethod
-    def load(cls, pid):
+    def load(cls, pid, twitter_name=None):
         """Load player state from database"""
-        state = MongoDb.player.find_one({'pid': pid})
+        if twitter_name:
+            search = {'name': twitter_name, 'twitter_creds': True}
+        else:
+            search = {'pid': pid}
+
+        state = MongoDb.player.find_one(search)
         if not state:
             raise KeyError('Could not load pid {} from database'.format(pid))
         player = cls(state)
@@ -105,9 +110,17 @@ class Player(object):
     def name(self):
         return self.state['name']
 
+    @name.setter
+    def name(self, value):
+        self.state['name'] = value
+
     @property
     def twitter_creds(self):
         return self.state['twitter_creds']
+
+    @twitter_creds.setter
+    def twitter_creds(self, value):
+        self.state['twitter_creds'] = value
 
     @property
     def score(self):

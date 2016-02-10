@@ -73,11 +73,20 @@ function fetchUser() {
 function sayHello(data) {
     console.log('sayHello called with %o', data);
 
-    if(data.returning) {
+    if(data.popupType == 'returning') {
         showPopup(generateText.returnGreeting(data.name, data.color, data.score));
     }
-    else {
+    else if (data.popupType == 'new') {
         showPopup(generateText.firstTimeGreeting(data.name, data.color));
+    }
+    else if (data.popupType == 'updated') {
+        showPopup('You have been ypdated');
+    }
+    else if (data.popupType == 'newTwitter') {
+        showPopup('Time to change your color ...');
+    }
+    else {
+        alert('Unknown popupType ' + data.popupType);
     }
 
     updateScore(data);   
@@ -445,13 +454,19 @@ function getDebug(token) {
 }
 
 
-function login() {
-    console.log("loging called");
-    var deferred = $.Deferred();
+function getLoginDetails() {
+    console.log("getLoginDetails called");
+    showPopup(generateText.loginText());
+}
 
+
+function getAuthUrl(token) {
+    console.log("getAuthUrl called with token %o", token);
+
+    var deferred = $.Deferred();
     var request = restClient.auth.read(userToken);
     request.done(function(data){
-        console.log('login returned %o', data);
+        console.log('getAuthUrl returned %o', data);
         deferred.resolve(data);
     });
 

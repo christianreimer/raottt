@@ -64,6 +64,13 @@ var generateText = {
                "will receive points (or loose points) depending on their contribution to the game</li>" +
                "</ul></p><p>These instructions, along with hints, can be accessed at any point via the " +
                "<span class='green-mini-button'><i class='fa fa-info-circle'></i></span> button on at the top of the screen.</p>";
+    },
+
+    loginText: function() {
+      return "<h3>Random Acts OfTic Tac Toe</h3>" +
+             "<p>Login with Twitter so that you can play across multiple devices, " +
+             "restore sessions, and choose which color you want to play for.</p>" +
+             "<p>Yes, lets <a href=/login>login</a>.</p>";
     }
 };
 

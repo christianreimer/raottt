@@ -16,6 +16,7 @@ import flask
 from flask.ext.restful import Resource
 from flask.ext.restful import Api
 from flask_limiter import Limiter
+import rauth
 
 from raottt import Game
 from raottt import Player
@@ -107,7 +108,7 @@ class API_Game(Resource):
 
         player.queue_move((source, target))
         score_change = game.make_move(player)
-        player.score += score_changey
+        player.score += score_change
         player.moves_made += 1
         player.save()
 
@@ -143,8 +144,19 @@ class API_Player(Resource):
     @limiter.limit("10 per minute")
     def get(self, uid):
         """Return the user specified by uid"""
+
+        # If this is a twitter callback
+        # Lookup the new user pid by name
+        # And the existing pid has points
+
+        # If this is the callback from twitter, then twitter_name will be set
+        # in the session
+        twitter_name = flask.session.pop('twitter_name', None)
+
+        popup_type = twitter_name and 'newTwitter' or 'returning'
+
         try:
-            player = Player.load(uid)
+            player = Player.load(uid, twitter_name)
         except KeyError as err:
             # Invalid (non-existing) user id, just create a new user
             logging.error(err)
@@ -156,24 +168,59 @@ class API_Player(Resource):
             player.score += score_change
             player.save()
 
-        flask.session['count'] = 0
-
         return flask.make_response(json.dumps({'token': player.pid,
                                                'name': player.name,
                                                'color': player.color,
                                                'score': player.score,
-                                               'returning': 1}))
+                                               'popupType': popup_type}))
 
     @limiter.limit('10 per minute')
     def post(self):
         """Create a new user"""
+        twitter_name = flask.session.pop('twitter_name', None)
+
         player = RESTPlayer.new(random.choice(('Red', 'Blue')))
+        if twitter_name:
+            player.name = twitter_name
+            player.twitter_creds = True
+            logging.info('Player {} logged in via twitter as {}'.format(
+                player.pid, player.name))
+
         player.save()
+        
         return flask.make_response(json.dumps({'token': player.pid,
                                                'name': player.name,
                                                'color': player.color,
                                                'score': player.score,
-                                               'returning': 0}))
+                                               'popupType': 'new'}))
+
+    @limiter.limit('10 per minute')
+    def patch(self, uid):
+        """Update a user"""
+        try:
+            player = Player.load(uid, None)
+        except KeyError as err:
+            logging.error(err)
+            return flask.make_response(oh_no())
+
+        try:
+            color = flask.request.form['color']
+        except (KeyError, ValueError):
+            logging.error('API_Player.patch could not extract color for pid {} '
+                'from request {}'.format(flask.request))
+            return flask.make_response(oh_no())
+
+        player.color = color
+        logging.info('Player {} has changed color to {}'.format(
+            player.pid, color))
+        player.save()
+
+        return flask.make_response(json.dumps({'token': player.pid,
+                                               'name': player.name,
+                                               'color': player.color,
+                                               'score': player.score,
+                                               'popupType': 'updated'}))
+
 
 
 class API_Score(Resource):
@@ -220,11 +267,18 @@ class API_Debug(Resource):
                  'player': game.player,
                  'score': game.score.dumpd()}))
 
+class API_Login(Resource):
+    """API endpoint for login"""
+    pass        
 
-class API_Auth(Resource):
-    """Auth API Endpoint"""
 
-    self.twitter = OAuth1Service(
+api.add_resource(API_Game, '/game/', '/game/<string:uid>/')
+api.add_resource(API_Player, '/player/', '/player/<string:uid>/')
+api.add_resource(API_Score, '/score/', '/score/<string:uid>/')
+api.add_resource(API_Debug, '/debug/', '/debug/<string:uid>/')
+
+
+twitter = rauth.OAuth1Service(
         name='twitter',
         consumer_key='Gj4uIVgztBtLcdZXquupij9ph',
         consumer_secret='J4kraCJ2C8aXjtHQOPjviAzTZ9pCkx4m4JTvftjmRhoMHEke7h',
@@ -233,42 +287,35 @@ class API_Auth(Resource):
         access_token_url='https://api.twitter.com/oauth/access_token',
         base_url='https://api.twitter.com/1.1/'
     )
+
+
+@app.route('/login')
+def login():
+    token = twitter.get_request_token(
+        params={'oauth_callback': flask.url_for('callback', _external=True)})
+    flask.session['token'] = token
+    return flask.redirect(twitter.get_authorize_url(token[0]))
+
+
+@app.route('/callback')
+def callback():
+    token = flask.session.pop('token', (None, None))
+    oauth_session = twitter.get_auth_session(
+        token[0],
+        token[1],
+        data={'oauth_verifier': flask.request.args['oauth_verifier']}
+    )
     
-    def get(self, uid):
-        token = flask.session.get('token', None)
-        if not token:
-            self.twitter_login()
-        else:
-            self.twitter_callback(flask.request.args)
+    player_info = oauth_session.get('account/verify_credentials.json').json()
+    name = player_info.get('screen_name')
 
-    def twitter_login(self):
-        token = self.twitter.get_request_token(
-            params={'oauth_callback': url_for('get', _external=True)})
-        flask.session['token'] = token
-        url = twitter.get_authorize_url(token[0])
-        print('Callback URL: '.format(url_for('get', _external=True)))
-        return flask.redirect(url)
+    player = RESTPlayer.new(random.choice(('Red', 'Blue')))
+    player.twitter_creds = True
+    player.name = name
+    player.save()
 
-    def twitter_callback(self):
-        token = flask.session['token']
-        oauth_session = twitter.get_auth_session(
-            token[0],
-            token[1],
-            data={'oauth_verifier': request.args['oauth_verifier']}
-        )
-    
-        me = oauth_session.get('account/verify_credentials.json').json()
-        username = me.get('screen_name')
-        print('username:{}'.format(username))
-        return flask.make_response("Hello {}".format(username))
-
-
-
-api.add_resource(API_Game, '/game/', '/game/<string:uid>/')
-api.add_resource(API_Player, '/player/', '/player/<string:uid>/')
-api.add_resource(API_Score, '/score/', '/score/<string:uid>/')
-api.add_resource(API_Debug, '/debug/', '/debug/<string:uid>/')
-api.add_resource(API_Auth, '/auth/', '/auth/<string:uid>/')
+    flask.session['twitter_name'] = name
+    return flask.redirect(flask.url_for('root'))
 
 
 @app.route('/')
