@@ -39,14 +39,10 @@
 </head>
 
 <body>
-
 	<div id="Container">
 		<div id="Header">
 			<a href=# onClick='showScore();'>
-				<div id="Score">
-					<div id="ScoreText">Score</div>
-					<div id="ScoreNumber">0</div>
-				</div>
+				<div id="Score"><div id="ScoreText">Score</div><div id="ScoreNumber">0</div></div>
 			</a>
 
 			<a href=# onClick='showInstructions();'>
@@ -57,24 +53,20 @@
 				<div id="Debug"><i class="fa fa-bug fa-lg"></i></div>
 			</a>
 			
-			<a href=# onClick='getLoginDetails();'>
-				<div id="Login">
-					<img height="40" width="40" src="images/twit.png"/>
-				</div>
+			<a href=# onClick='showLoginPopup();'>
+				<div id="Login"><img height="40" width="40" src="images/twit.png"/></div>
 			</a>
 		</div>
-		
+
 	    <div id="Board" class="Board"></div>
-	    
     </div>
 
-	<div id="welcomePopup">
-		<div id="WelcomeText" class="welcomePopup_close"></div>
-		<div id="CloseButton" class="welcomePopup_close">
-				I got it, let's play!
-		</div>
+	<div id="Popup">
+		<div id="PopupTitle">Random Acts of Tic Tac Toe</div>
+		<div id="PopupText"></div>
+		<div id="PopupButton1" class="PopupButton"></div>
+		<div id="PopupButton2" class="PopupButton SpaceAbove"></div>
 	</div>
-
 
 </body>
 </html>	

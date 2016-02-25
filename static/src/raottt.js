@@ -42,6 +42,8 @@ function fetchUser() {
     var deferred = $.Deferred();
     var token = $.cookie('token');
 
+    console.log("fetchUser token %o", token);
+
     if(token) {
         // Returning user
         var request = restClient.player.read(token);
@@ -73,17 +75,27 @@ function fetchUser() {
 function sayHello(data) {
     console.log('sayHello called with %o', data);
 
-    if(data.popupType == 'returning') {
-        showPopup(generateText.returnGreeting(data.name, data.color, data.score));
+    if(data.popupType == 'returningPlayer') {
+        if(data.creds) {
+
+            showPopup('Hello there returning twitter user',
+                standardCloseButton(), false, true);
+        }
+        else {
+            var text = generateText.returnGreetingAnon(
+                data.name, data.color, data.score);
+
+            showPopup(text, standardCloseButton(), false, true);
+        }
     }
-    else if (data.popupType == 'new') {
-        showPopup(generateText.firstTimeGreeting(data.name, data.color));
+    else if (data.popupType == 'newPlayer') {
+        showPopup(generateText.firstTimeGreeting(data.name, data.color), true);
     }
-    else if (data.popupType == 'updated') {
-        showPopup('You have been ypdated');
+    else if (data.popupType == 'updatedPlayer') {
+        showPopup('You have been ypdated', false);
     }
     else if (data.popupType == 'newTwitter') {
-        showPopup('Time to change your color ...');
+        showPopup('Time to change your color ...', standardCloseButton(), false, false);
     }
     else {
         alert('Unknown popupType ' + data.popupType);
@@ -199,6 +211,8 @@ function addPieces(data) {
         
         if(movable && data.offBoard == false) {
             div.addClass("draggable");
+        } else {
+            div.addClass("non-draggable");
         }
 
         scalePiece(div);
@@ -302,7 +316,7 @@ function processMove(color, source, target) {
         playerData = data;
 
         if(data.message) {
-            showPopup(data.message);
+            showPopup(data.message, standardCloseButton(), false, true);
         }
         
         // Remove all the droppable and click handlers before re-constructing
@@ -360,25 +374,75 @@ function showScore() {
     spinner(true);
 
     getScore(userToken).pipe(function (data) {
-        showPopup(generateText.scoreText(data, playerColor));
+
+        showPopup(generateText.scoreText(data, playerColor),
+            standardCloseButton(), false, true);
     });
 }
 
 
 function showInstructions() {
-    showPopup(generateText.instructionsText(instructions));
+    showPopup(generateText.instructionsText(instructions),
+        standardCloseButton(), false, true);
 }
 
 
-function showPopup(data) {
-    console.log("showPopup called");
+function showPopup(text, buttonOne, buttonTwo, easyClose) {
     spinner(false);
     
     var maxWidth = $(window).width();
     maxWidth = maxWidth > 550 ? 550 : maxWidth - 2;
-    $("#welcomePopup").css( "maxWidth", maxWidth + "px" );
-    $("#WelcomeText").html(data);
-    $("#welcomePopup").popup('show');
+    $("#Popup").css( "maxWidth", maxWidth + "px" );
+
+    $("#PopupTitle").html('<h3>Random Acts Of Tic Tac Toe</h3>');
+    $("#PopupText").html(text);
+
+    if(buttonOne) {
+        $("#PopupButton1").addClass(buttonOne.color);
+        $("#PopupButton1").html(buttonOne.text);
+
+        if(buttonOne.onClickTarget) {
+            $("#PopupButton1").on('click', buttonOne.onClickTarget);
+        }
+
+        if(buttonOne.close) {
+            $("#PopupButton1").addClass("Popup_close");
+        } else {
+            $("#PopupButton1").removeClass("Popup_close");
+        }
+
+        $("#PopupButton1").show();
+    } else {
+        $("#PopupButton1").hide();
+    }
+
+    if(buttonTwo) {
+        $("#PopupButton2").addClass(buttonTwo.color);
+        $("#PopupButton2").html(buttonTwo.text);
+
+        if(buttonTwo.onClick) {
+            $("#PopupButton2").click(buttonTwo.onClick);
+        }
+
+        if(buttonTwo.close) {
+            $("#PopupButton2").addClass("Popup_close");
+        } else {
+            $("#PopupButton2").removeClass("Popup_close");
+        }
+
+        $("#PopupButton2").show();
+    } else {
+        $("#PopupButton2").hide();
+    }
+
+
+    if(easyClose) {
+        $("#Popup").addClass("Popup_close");
+    } else {
+        $("#Popup").removeClass("Popup_close");   
+    }
+
+    $("#Popup").popup('show');
 }
 
 
@@ -392,6 +456,8 @@ function setupTiles() {
 
 
 function updateScore(data) {
+    console.log("updateScore called with %o", data);
+
     var txt = $('#ScoreNumber').text();
     var num = parseInt(txt.replace(',', ''));
 
@@ -435,7 +501,7 @@ function showDebug() {
         }
 
         text += "</ul>";
-        showPopup(text);
+        showPopup(text, true);
     });
 }
 
@@ -454,14 +520,47 @@ function getDebug(token) {
 }
 
 
-function getLoginDetails() {
-    console.log("getLoginDetails called");
-    showPopup(generateText.loginText());
+function showLoginPopup() {
+    console.log("showLogingPopup called");
+
+    // Call back to the server with the uid token to determine which popuy
+    // to show
+
+    getLoginType().pipe(function (data) {
+        if(data.popupType == 'startLogin') {
+
+            var func = function() { loadUrl(data.url); };
+
+            var button = {};
+            button.color = 'PopupButtonGreen';
+            button.text = 'Login With Twitter';
+            button.show = true;
+            button.onClickTarget = func;
+            button.close = false;
+
+            var text = "<p>Login in twitter to play under your twitter name " +
+                       "and to persist across devices ...<p>";
+
+            showPopup(text, button, standardCloseButton(), false);
+        } else if(data.popupType == 'changeColor') {
+            var text = "<p>Form for you to change the color of your team while " +
+                       "you maintain your name and score. Also you can logout " +
+                       "if you want to.<p>";
+            var button = {};
+            button.color = 'PopupButtonBlue';
+            button.text = 'Logout';
+            button.show = true;
+            button.onClickTarget = logOut;
+            button.close = false;
+
+            showPopup(text, button, standardCloseButton(), false);
+        }
+    });
 }
 
 
-function getAuthUrl(token) {
-    console.log("getAuthUrl called with token %o", token);
+function getLoginType(token) {
+    console.log('getLoginType called with token %o', token);
 
     var deferred = $.Deferred();
     var request = restClient.auth.read(userToken);
@@ -471,4 +570,34 @@ function getAuthUrl(token) {
     });
 
     return deferred.promise();
+
+}
+
+function standardCloseButton() {
+    var button = {};
+    button.show = true;
+    button.text = "Let's Play!";
+    button.color = "PopupButtonGray";
+    button.onClickTarget = false;
+    button.close = true;
+    return button;
+}
+
+
+function loadUrl(url) {
+    window.location.replace(url);
+}
+
+
+function logOut() {
+    console.log("Logout called");
+
+    spinner(true);
+    $.removeCookie('token');
+
+    userToken = undefined;
+    gameId = undefined;
+    playerData = undefined;
+
+    fetchUser().pipe(sayHello).pipe(resetBoard);
 }

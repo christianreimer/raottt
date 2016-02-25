@@ -26,7 +26,7 @@ from raottt.util import adapter
 
 
 app = flask.Flask(__name__, static_url_path='')
-app.config['RATELIMIT_STORAGE_URL'] = os.environ['REDISCLOUD_URL']
+app.config['RATELIMIT_STORAGE_URL'] = os.environ.get('REDISCLOUD_URL', None)
 limiter = Limiter(app)
 api = Api(app)
 app.secret_key = '0xDecafBad'
@@ -35,8 +35,11 @@ app.secret_key = '0xDecafBad'
 def oh_no():
     """Create an Oh No! response"""
     msg = {'displayMsg': True,
-           'message': ("<p>On No!</p>"
-                       "<p>Looks like something went wrong, please reload ...")}
+           'message':
+                ("<p>On No!</p>"
+                 "<p>Looks like something went wrong, please reload ...</p>"
+                 "<p></p>"
+                 "<i class='fa fa-bug fa-lg'>")}
     return json.dumps(msg)
 
 
@@ -55,7 +58,7 @@ class API_Game(Resource):
             return flask.make_response(oh_no())
         
         # Apply any score change that results from other people moves
-        score_change = Score.check_for_score_upate(player.pid)
+        score_change = Score.check_for_score_update(player.pid)
         if score_change:
             player.score += score_change
             player.save()
@@ -81,7 +84,7 @@ class API_Game(Resource):
             return flask.make_response(oh_no())
 
         # Apply any score change that results from other people moves
-        score_change = Score.check_for_score_upate(player.pid)
+        score_change = Score.check_for_score_update(player.pid)
         if score_change:
             player.score += score_change
             player.save()
@@ -120,7 +123,7 @@ class API_Game(Resource):
 
             # There will be more points because the user participated in a
             # winning game
-            score_additional = Score.check_for_score_upate(player.pid)
+            score_additional = Score.check_for_score_update(player.pid)
             player.score += score_additional
             player.save()
 
@@ -143,17 +146,10 @@ class API_Player(Resource):
 
     @limiter.limit("10 per minute")
     def get(self, uid):
-        """Return the user specified by uid"""
-
-        # If this is a twitter callback
-        # Lookup the new user pid by name
-        # And the existing pid has points
-
-        # If this is the callback from twitter, then twitter_name will be set
-        # in the session
+        """Load and return user specified by uid"""
+        # If twitter name is set, then we came from the twitter login callback
         twitter_name = flask.session.pop('twitter_name', None)
-
-        popup_type = twitter_name and 'newTwitter' or 'returning'
+        popup_type = twitter_name and 'newTwitter' or 'returningPlayer'
 
         try:
             player = Player.load(uid, twitter_name)
@@ -162,8 +158,15 @@ class API_Player(Resource):
             logging.error(err)
             return self.post()
 
-        # Apply any score change that results from other people moves
-        score_change = Score.check_for_score_upate(player.pid)
+        if twitter_name:
+            player.name = twitter_name
+            player.twitter_creds = True
+            player.save()
+            logging.info('Player {} got twitter_creds, now know as {}'.format(
+                player.pid, twitter_name))
+
+        # Apply any score change that results from other peoples moves
+        score_change = Score.check_for_score_update(player.pid)
         if score_change:
             player.score += score_change
             player.save()
@@ -172,37 +175,23 @@ class API_Player(Resource):
                                                'name': player.name,
                                                'color': player.color,
                                                'score': player.score,
+                                               'creds' : player.twitter_creds,
                                                'popupType': popup_type}))
 
     @limiter.limit('10 per minute')
     def post(self):
         """Create a new user"""
-        twitter_name = flask.session.pop('twitter_name', None)
-
         player = RESTPlayer.new(random.choice(('Red', 'Blue')))
-        if twitter_name:
-            player.name = twitter_name
-            player.twitter_creds = True
-            logging.info('Player {} logged in via twitter as {}'.format(
-                player.pid, player.name))
-
         player.save()
-        
         return flask.make_response(json.dumps({'token': player.pid,
                                                'name': player.name,
                                                'color': player.color,
                                                'score': player.score,
-                                               'popupType': 'new'}))
+                                               'popupType': 'newPlayer'}))
 
     @limiter.limit('10 per minute')
     def patch(self, uid):
-        """Update a user"""
-        try:
-            player = Player.load(uid, None)
-        except KeyError as err:
-            logging.error(err)
-            return flask.make_response(oh_no())
-
+        """Update user"""
         try:
             color = flask.request.form['color']
         except (KeyError, ValueError):
@@ -210,17 +199,17 @@ class API_Player(Resource):
                 'from request {}'.format(flask.request))
             return flask.make_response(oh_no())
 
+        player = Player.load(uid, None)
         player.color = color
+        player.save()
         logging.info('Player {} has changed color to {}'.format(
             player.pid, color))
-        player.save()
 
         return flask.make_response(json.dumps({'token': player.pid,
                                                'name': player.name,
                                                'color': player.color,
                                                'score': player.score,
-                                               'popupType': 'updated'}))
-
+                                               'popupType': 'updatedPlayer'}))
 
 
 class API_Score(Resource):
@@ -267,15 +256,37 @@ class API_Debug(Resource):
                  'player': game.player,
                  'score': game.score.dumpd()}))
 
-class API_Login(Resource):
+
+class API_Auth(Resource):
     """API endpoint for login"""
-    pass        
+    
+    def get(self, uid):
+        """Start the login process for the given uid"""
+        logging.info('API_Auth.get {}'.format(uid))
+
+        try:
+            player = Player.load(uid, None)
+        except KeyError as err:
+            logging.error(err)
+            return flask.make_response(oh_no())
+
+        if player.twitter_creds:
+            return flask.make_response(
+                json.dumps({'popupType': 'changeColor'}))
+
+        # If the current user does not have twitter_creds, then bring up the
+        # do you want to login popup
+        return flask.make_response(
+            json.dumps(
+                {'popupType': 'startLogin',
+                 'url': flask.url_for('login_redirect')}))        
 
 
 api.add_resource(API_Game, '/game/', '/game/<string:uid>/')
 api.add_resource(API_Player, '/player/', '/player/<string:uid>/')
 api.add_resource(API_Score, '/score/', '/score/<string:uid>/')
 api.add_resource(API_Debug, '/debug/', '/debug/<string:uid>/')
+api.add_resource(API_Auth, '/auth/', '/auth/<string:uid>/')
 
 
 twitter = rauth.OAuth1Service(
@@ -289,8 +300,8 @@ twitter = rauth.OAuth1Service(
     )
 
 
-@app.route('/login')
-def login():
+@app.route('/login_redirect')
+def login_redirect():
     token = twitter.get_request_token(
         params={'oauth_callback': flask.url_for('callback', _external=True)})
     flask.session['token'] = token
@@ -308,12 +319,6 @@ def callback():
     
     player_info = oauth_session.get('account/verify_credentials.json').json()
     name = player_info.get('screen_name')
-
-    player = RESTPlayer.new(random.choice(('Red', 'Blue')))
-    player.twitter_creds = True
-    player.name = name
-    player.save()
-
     flask.session['twitter_name'] = name
     return flask.redirect(flask.url_for('root'))
 

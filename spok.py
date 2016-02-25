@@ -139,7 +139,7 @@ def init():
 def main():
     """main"""
     args = docopt(__doc__)
-    
+
     if args['nuke']:
         msg = 'Are you sure you want to nuke the database: '
         answer = input(msg)

@@ -124,6 +124,11 @@ html, body {
 }
 
 .draggable {
+	cursor: move;
+}
+
+.non-draggable {
+	cursor: not-allowed;
 }
 
 .droppable {
@@ -137,21 +142,12 @@ html, body {
 	background-color: Pink;	
 }
 
-#welcomePopup {
-	transition: all 0.3s;
-	background-color: White;
-	border: 1px solid Black;
-	font-family: Verdana;
-	font-size: 16px;
-	line-height: 20px;
-	padding: 20px;
-	margin: 20px;
-}
 
-#CloseButton {
+
+#LoginButton {
 	border-radius: 3px;
 	height: 40px;
-	background-color: gray;	
+	background-color: green;	
 	font-family: Arial;
 	font-size: 22px;
 	text-align: center;
@@ -179,3 +175,46 @@ html, body {
 	font-weight: bold;
 }
 
+
+#Popup {
+	transition: all 0.3s;
+	background-color: White;
+	border: 1px solid Black;
+	font-family: Verdana;
+	font-size: 16px;
+	line-height: 20px;
+	padding: 20px;
+	margin: 20px;
+}
+
+#PopupTitle {
+	font-weight: bold;
+	color: #333;
+}
+
+.PopupButton {
+	border-radius: 3px;
+	height: 40px;	
+	font-family: Arial;
+	font-size: 22px;
+	text-align: center;
+	color: white;
+	padding-top:16px;
+	cursor: default;
+}
+
+.PopupButtonGray {
+	background-color: gray;	
+}
+
+.PopupButtonGreen {
+	background-color: green;		
+}
+
+.PopupButtonBlue {
+	background-color: blue;
+}
+
+.SpaceAbove {
+	margin-top: 15px;
+}

@@ -1,8 +1,6 @@
 var generateText = {
     firstTimeGreeting: function(name, color) {
-        return "<h3>Random Acts Of Tic Tac Toe</h3>" +
-
-              "<p>Welcome to the game. I don't think I have seen you before! I will call you " + 
+        return "<p>Welcome to the game. I don't think I have seen you before! I will call you " + 
               "<b>" + name + "</b> and you will play for the " + 
               "<span class='help-text-" + color + "'>" + color + "</span> team.</p>" +
 
@@ -11,10 +9,9 @@ var generateText = {
               "with Twitter.</p>" + this.instructionsText(undefined);
     },
 
-    returnGreeting: function(name, color, score) {
-        return "<h3>Random Acts Of Tic Tac Toe</h3>" + 
-              "Welcome back <b>" + name + "</b> (remember that I gave you a name when " +
-              "you first stopped by?).</p>" + 
+    returnGreetingAnon: function(name, color, score) {
+        return "Welcome back <b>" + name + "</b> " + 
+              "(remember that I gave you a name when you first stopped by?)</p>" +
 
               "<p>You are still playing for the " + 
               "<span class='help-text-" + color + "'>" + color + "</span> team. " + 
@@ -25,9 +22,21 @@ var generateText = {
               "at any time for instructions.</p>";
     },
 
-    scoreText: function(data, color) {
+    returnGreetingCreds: function(name, color, score) {
         return "<h3>Random Acts Of Tic Tac Toe</h3>" + 
-               "<p>You are playing for the " + 
+              "Welcome back <b>" + name + "</b> -- nice to see you again.</p>" +
+
+              "<p>You are still playing for the " + 
+              "<span class='help-text-" + color + "'>" + color + "</span> team. " + 
+              "You have <b>" + score + "</b> points (way to go!)</p>" + 
+
+              "<p>Remember that you can click the " + 
+              "<span class='green-mini-button'><i class='fa fa-info-circle'></i></span> " +
+              "at any time for instructions.</p>";
+    },
+
+    scoreText: function(data, color) {
+        return "<p>You are playing for the " + 
                "<span class='help-text-" + color + "'>" + color + "</span> team.</p>" +
 
                "<p>Your have scored a total of " + data.score + " points, by " +
@@ -39,8 +48,6 @@ var generateText = {
     },
 
     instructionsText: function(hint) {
-        var header = "<h3>Random Acts Of Tic Tac Toe</h3>";
-
         if(hint) {
             var hintText = "<p><b>Hint</b></p><p>" + hint + "</p>";
         }
@@ -48,7 +55,7 @@ var generateText = {
             var hintText = "";
         }
 
-        return header + hintText + "<hr><p><b>Game Instructions</b></p>" +
+        return hintText + "<hr><p><b>Game Instructions</b></p>" +
                "<p>The objective of the game is to move three pieces of the same " +
                "color into a row (horizontal, vertical, or diagonal). Unlike regular " +
                "Tic Tac Toe, this game has a few additional challenges:" + 
@@ -67,10 +74,11 @@ var generateText = {
     },
 
     loginText: function() {
-      return "<h3>Random Acts OfTic Tac Toe</h3>" +
-             "<p>Login with Twitter so that you can play across multiple devices, " +
+      return "<p>Login with Twitter so that you can play across multiple devices, " +
              "restore sessions, and choose which color you want to play for.</p>" +
-             "<p>Yes, lets <a href=/login>login</a>.</p>";
+             "<p></p>" +
+             ""
+             "<p>Yes, lets <a href=/login_redirect>login</a>.</p>";
     }
 };
 

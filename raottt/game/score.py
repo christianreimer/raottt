@@ -206,7 +206,7 @@ class Score(object):
         return self.teams[player.color].get(player.pid, 0)
 
     @classmethod
-    def check_for_score_upate(cls, pid):
+    def check_for_score_update(cls, pid):
         """Check if there are score updates waiting to be applied
         for this player"""
         delta = sum([r['delta'] for r in MongoDb.updates.find({'pid': pid})]) 
