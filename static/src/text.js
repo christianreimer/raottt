@@ -23,8 +23,7 @@ var generateText = {
     },
 
     returnGreetingCreds: function(name, color, score) {
-        return "<h3>Random Acts Of Tic Tac Toe</h3>" + 
-              "Welcome back <b>" + name + "</b> -- nice to see you again.</p>" +
+        return "Welcome back <b>" + name + "</b> -- nice to see you again.</p>" +
 
               "<p>You are still playing for the " + 
               "<span class='help-text-" + color + "'>" + color + "</span> team. " + 

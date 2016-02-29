@@ -78,8 +78,10 @@ function sayHello(data) {
     if(data.popupType == 'returningPlayer') {
         if(data.creds) {
 
-            showPopup('Hello there returning twitter user',
-                standardCloseButton(), false, true);
+            var text = generateText.returnGreetingCreds(
+                data.name, data.color, data.score);
+
+            showPopup(text, standardCloseButton(), false, true);
         }
         else {
             var text = generateText.returnGreetingAnon(
@@ -89,13 +91,16 @@ function sayHello(data) {
         }
     }
     else if (data.popupType == 'newPlayer') {
-        showPopup(generateText.firstTimeGreeting(data.name, data.color), true);
+        showPopup(generateText.firstTimeGreeting(data.name, data.color),
+            standardCloseButton(), false, true);
     }
     else if (data.popupType == 'updatedPlayer') {
-        showPopup('You have been ypdated', false);
+        showPopup('You have been updated',
+            standardCloseButton(), false, true);
     }
     else if (data.popupType == 'newTwitter') {
-        showPopup('Time to change your color ...', standardCloseButton(), false, false);
+        showPopup('Time to change your color ...',
+            standardCloseButton(), false, false);
     }
     else {
         alert('Unknown popupType ' + data.popupType);
@@ -387,7 +392,10 @@ function showInstructions() {
 }
 
 
-function showPopup(text, buttonOne, buttonTwo, easyClose) {
+function showPopup(text, buttonOneDiv, buttonTwoDiv, easyClose) {
+    console.log('showPopup called with buttonOneDiv %o', buttonOneDiv);
+    console.log('showPopup called with buttonTwoDiv %o', buttonTwoDiv);
+
     spinner(false);
     
     var maxWidth = $(window).width();
@@ -397,44 +405,20 @@ function showPopup(text, buttonOne, buttonTwo, easyClose) {
     $("#PopupTitle").html('<h3>Random Acts Of Tic Tac Toe</h3>');
     $("#PopupText").html(text);
 
-    if(buttonOne) {
-        $("#PopupButton1").addClass(buttonOne.color);
-        $("#PopupButton1").html(buttonOne.text);
-
-        if(buttonOne.onClickTarget) {
-            $("#PopupButton1").on('click', buttonOne.onClickTarget);
-        }
-
-        if(buttonOne.close) {
-            $("#PopupButton1").addClass("Popup_close");
-        } else {
-            $("#PopupButton1").removeClass("Popup_close");
-        }
-
+    if(buttonOneDiv) {
+        $("#PopupButton1").replaceWith(buttonOneDiv);
         $("#PopupButton1").show();
     } else {
         $("#PopupButton1").hide();
     }
 
-    if(buttonTwo) {
-        $("#PopupButton2").addClass(buttonTwo.color);
-        $("#PopupButton2").html(buttonTwo.text);
-
-        if(buttonTwo.onClick) {
-            $("#PopupButton2").click(buttonTwo.onClick);
-        }
-
-        if(buttonTwo.close) {
-            $("#PopupButton2").addClass("Popup_close");
-        } else {
-            $("#PopupButton2").removeClass("Popup_close");
-        }
-
+    if(buttonTwoDiv) {
+        $("#PopupButton2").replaceWith(buttonTwoDiv);
+        $("#PopupButton2").addClass('SpaceAbove');
         $("#PopupButton2").show();
     } else {
         $("#PopupButton2").hide();
     }
-
 
     if(easyClose) {
         $("#Popup").addClass("Popup_close");
@@ -501,7 +485,7 @@ function showDebug() {
         }
 
         text += "</ul>";
-        showPopup(text, true);
+        showPopup(text, standardCloseButton, false, true);
     });
 }
 
@@ -529,31 +513,30 @@ function showLoginPopup() {
     getLoginType().pipe(function (data) {
         if(data.popupType == 'startLogin') {
 
-            var func = function() { loadUrl(data.url); };
+            // var func = function() { loadUrl(data.url); };
+            var func = "loadUrl('" + data.url + "')";
 
-            var button = {};
-            button.color = 'PopupButtonGreen';
-            button.text = 'Login With Twitter';
-            button.show = true;
-            button.onClickTarget = func;
-            button.close = false;
+            var button = buttonDiv(1, 'PopupButtonGreen',
+                'Login With Twitter', func, false);
+
+            console.log('ButtonDiv %o', button);
 
             var text = "<p>Login in twitter to play under your twitter name " +
                        "and to persist across devices ...<p>";
 
-            showPopup(text, button, standardCloseButton(), false);
+            showPopup(text, button, standardCloseButton(2), false);
         } else if(data.popupType == 'changeColor') {
+
+            var button = buttonDiv(1, 'PopupButtonBlue',
+                'Logout From Twitter', 'logOut()', false);
+
+            console.log('ButtonDiv %o', button);
+
             var text = "<p>Form for you to change the color of your team while " +
                        "you maintain your name and score. Also you can logout " +
                        "if you want to.<p>";
-            var button = {};
-            button.color = 'PopupButtonBlue';
-            button.text = 'Logout';
-            button.show = true;
-            button.onClickTarget = logOut;
-            button.close = false;
 
-            showPopup(text, button, standardCloseButton(), false);
+            showPopup(text, button, standardCloseButton(2), false);
         }
     });
 }
@@ -573,7 +556,7 @@ function getLoginType(token) {
 
 }
 
-function standardCloseButton() {
+function standardCloseButton_() {
     var button = {};
     button.show = true;
     button.text = "Let's Play!";
@@ -600,4 +583,20 @@ function logOut() {
     playerData = undefined;
 
     fetchUser().pipe(sayHello).pipe(resetBoard);
+}
+
+
+function buttonDiv(number, color, text, clickTarget, close) {
+    var template = '<div id="PopupButton{0}" class="PopupButton {1}{2}"{3}>{4}</div>';
+    template = template.replace('{0}', number);
+    template = template.replace('{1}', color);
+    template = template.replace('{2}', (close ? ' Popup_close' : ''));
+    template = template.replace('{3}', (clickTarget ? ' onClick="' + clickTarget + '"' : ''));
+    template = template.replace('{4}', text);
+    return template;
+}
+
+function standardCloseButton(num) {
+    num = num ? num : '1'
+    return buttonDiv(num, 'PopupButtonGray', "Got it, let's play!", false, true);
 }

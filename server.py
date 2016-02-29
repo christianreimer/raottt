@@ -158,6 +158,10 @@ class API_Player(Resource):
             logging.error(err)
             return self.post()
 
+        # @@@ Need to make sure we correctly handle a returning twitter users
+        # In other words, if we can load the user from twitter_name + creds
+        # then we should use the player identity instead of the incoming one
+
         if twitter_name:
             player.name = twitter_name
             player.twitter_creds = True
