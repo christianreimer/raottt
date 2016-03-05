@@ -304,23 +304,29 @@ twitter = rauth.OAuth1Service(
 
 @app.route('/login_redirect')
 def login_redirect():
-    token = twitter.get_request_token(
-        params={'oauth_callback': flask.url_for('callback', _external=True)})
-    flask.session['token'] = token
+    callback_url = flask.url_for('callback', _external=True)
+    token = twitter.get_request_token(params={'oauth_callback': callback_url})
+    # flask.session['token'] = token
+    logging.info('login_redirect callback url:{} token:{}'.format(
+        callback_url, token))
     return flask.redirect(twitter.get_authorize_url(token[0]))
 
 
 @app.route('/callback')
 def callback():
-    token = flask.session.pop('token', (None, None))
+    # token = flask.session.pop('token', (None, None))
+    logging.info('callback args:{}'.format(flask.request.args))
 
     if 'denied' in flask.request.args:
         logging.info('Player denied Twitter auth request')
         return flask.redirect(flask.url_for('root'))
 
+    token1 = flask.request.args['oauth_token']
+    token2 = flask.request.args['oauth_verifier']
+
     oauth_session = twitter.get_auth_session(
-        token[0],
-        token[1],
+        token1,
+        token2,
         data={'oauth_verifier': flask.request.args['oauth_verifier']}
     )
     
