@@ -514,7 +514,7 @@ function showLoginPopup() {
         if(data.popupType == 'startLogin') {
 
             var func = "loadUrl('" + data.url + "')";
-            var button = buttonDiv(1, 'PopupButtonGreen',
+            var button = buttonDiv(1, 'PopupButtonBlue',
                 'Login With Twitter', func, false);
 
             showPopup(generateText.loginText(),
@@ -522,7 +522,7 @@ function showLoginPopup() {
 
         } else if(data.popupType == 'logout') {
 
-            var button = buttonDiv(1, 'PopupButtonGray',
+            var button = buttonDiv(1, 'PopupButtonBlue',
                 'Logout From Twitter', 'logOut()', false);
 
             showPopup(generateText.logoutText(data.name),
