@@ -48,15 +48,20 @@ class Player(object):
     @classmethod
     def load(cls, pid, twitter_name=None):
         """Load player state from database"""
-        if twitter_name:
-            search = {'name': twitter_name, 'twitter_creds': True}
-        else:
-            search = {'pid': pid}
+        state_pid = MongoDb.player.find_one({'pid': pid})
 
-        state = MongoDb.player.find_one(search)
-        if not state:
-            raise KeyError('Could not load pid {} from database'.format(pid))
-        player = cls(state)
+        if twitter_name:
+            state_name = MongoDb.player.find_one(
+                {'name': twitter_name, 'twitter_creds': True})
+        else:
+            state_name = None
+
+        if not any((state_pid, state_name)):
+            raise KeyError(
+                'Could not load pid {} or name {} from database'.format(
+                    pid, twitter_name))
+
+        player = cls(state_name or state_pid)
         logging.debug('Loaded {}'.format(player))
         return player
 

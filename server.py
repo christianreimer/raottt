@@ -151,6 +151,9 @@ class API_Player(Resource):
         twitter_name = flask.session.pop('twitter_name', None)
         popup_type = twitter_name and 'newTwitter' or 'returningPlayer'
 
+        logging.info('API_Player.get() uid:{} twitter_name:{} args:{}'.format(
+            uid, twitter_name, flask.request.args))
+
         try:
             player = Player.load(uid, twitter_name)
         except KeyError as err:
