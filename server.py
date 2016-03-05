@@ -36,7 +36,7 @@ def oh_no():
     """Create an Oh No! response"""
     msg = {'displayMsg': True,
            'message':
-                ("<p>On No!</p>"
+                ("<h2>On No!</h2>"
                  "<p>Looks like something went wrong, please reload ...</p>"
                  "<p></p>"
                  "<i class='fa fa-bug fa-lg'>")}
@@ -158,11 +158,8 @@ class API_Player(Resource):
             logging.error(err)
             return self.post()
 
-        # @@@ Need to make sure we correctly handle a returning twitter users
-        # In other words, if we can load the user from twitter_name + creds
-        # then we should use the player identity instead of the incoming one
-
-        if twitter_name:
+        if twitter_name and not player.twitter_creds:
+            # User has just gotten their twitter creds
             player.name = twitter_name
             player.twitter_creds = True
             player.save()
@@ -276,7 +273,8 @@ class API_Auth(Resource):
 
         if player.twitter_creds:
             return flask.make_response(
-                json.dumps({'popupType': 'changeColor'}))
+                json.dumps({'popupType': 'logout',
+                            'name': player.name}))
 
         # If the current user does not have twitter_creds, then bring up the
         # do you want to login popup
@@ -315,6 +313,11 @@ def login_redirect():
 @app.route('/callback')
 def callback():
     token = flask.session.pop('token', (None, None))
+
+    if 'denied' in flask.request.args:
+        logging.info('Player denied Twitter auth request')
+        return flask.redirect(flask.url_for('root'))
+
     oauth_session = twitter.get_auth_session(
         token[0],
         token[1],

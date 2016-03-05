@@ -4,28 +4,27 @@ var generateText = {
               "<b>" + name + "</b> and you will play for the " + 
               "<span class='help-text-" + color + "'>" + color + "</span> team.</p>" +
 
-              "<p>If you want a different name, to be able to play across devices, " + 
-              "or if you want to play for a specific color, then you will have to login " +
-              "with Twitter.</p>" + this.instructionsText(undefined);
+              "<p>If you want a different name, or to be able to play across devices, " + 
+              "then you will have to login with Twitter.</p>" + this.instructionsText(undefined);
     },
 
     returnGreetingAnon: function(name, color, score) {
         return "Welcome back <b>" + name + "</b> " + 
               "(remember that I gave you a name when you first stopped by?)</p>" +
 
-              "<p>You are still playing for the " + 
+              "<p>You are playing for the " + 
               "<span class='help-text-" + color + "'>" + color + "</span> team. " + 
               "You have <b>" + score + "</b> points (way to go!)</p>" + 
 
-              "<p>You can login with Twitter if you want a different name or color, and remember that " + 
+              "<p>You can login with Twitter if you want a different name, and remember that " + 
               "you can click the <span class='green-mini-button'><i class='fa fa-info-circle'></i></span> " +
               "at any time for instructions.</p>";
     },
 
     returnGreetingCreds: function(name, color, score) {
-        return "Welcome back <b>" + name + "</b> -- nice to see you again.</p>" +
+        return "Welcome back <b>" + name + "</b>, nice to see you again.</p>" +
 
-              "<p>You are still playing for the " + 
+              "<p>You are playing for the " + 
               "<span class='help-text-" + color + "'>" + color + "</span> team. " + 
               "You have <b>" + score + "</b> points (way to go!)</p>" + 
 
@@ -74,10 +73,21 @@ var generateText = {
 
     loginText: function() {
       return "<p>Login with Twitter so that you can play across multiple devices, " +
-             "restore sessions, and choose which color you want to play for.</p>" +
-             "<p></p>" +
-             ""
-             "<p>Yes, lets <a href=/login_redirect>login</a>.</p>";
+             "restore sessions, and use your twitter name.</p>";
+    },
+
+    logoutText: function(name) {
+      return "<p>You are currently logged in with Twitter and know " +
+             "as <b>" + name + "</b>. If you want to, you can " +
+             "logout and go back to player anonymously</p>";
+    },
+
+    newTwitterUser: function(name, color, score) {
+        return "<p>You will now be know as <b>" + name + "</b> (isn't that much better?)</p>" + 
+               "<p>You are playing for the " + 
+               "<span class='help-text-" + color + "'>" + color + "</span> team. " + 
+               "You have <b>" + score + "</b> points (way to go!)</p>" + 
+               "<p>Lets get back to the game ...</p>";
     }
 };
 

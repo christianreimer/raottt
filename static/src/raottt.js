@@ -99,7 +99,7 @@ function sayHello(data) {
             standardCloseButton(), false, true);
     }
     else if (data.popupType == 'newTwitter') {
-        showPopup('Time to change your color ...',
+        showPopup(generateText.newTwitterUser(data.name, data.color, data.score),
             standardCloseButton(), false, false);
     }
     else {
@@ -513,30 +513,20 @@ function showLoginPopup() {
     getLoginType().pipe(function (data) {
         if(data.popupType == 'startLogin') {
 
-            // var func = function() { loadUrl(data.url); };
             var func = "loadUrl('" + data.url + "')";
-
             var button = buttonDiv(1, 'PopupButtonGreen',
                 'Login With Twitter', func, false);
 
-            console.log('ButtonDiv %o', button);
+            showPopup(generateText.loginText(),
+                button, standardCloseButton(2), false);
 
-            var text = "<p>Login in twitter to play under your twitter name " +
-                       "and to persist across devices ...<p>";
+        } else if(data.popupType == 'logout') {
 
-            showPopup(text, button, standardCloseButton(2), false);
-        } else if(data.popupType == 'changeColor') {
-
-            var button = buttonDiv(1, 'PopupButtonBlue',
+            var button = buttonDiv(1, 'PopupButtonGray',
                 'Logout From Twitter', 'logOut()', false);
 
-            console.log('ButtonDiv %o', button);
-
-            var text = "<p>Form for you to change the color of your team while " +
-                       "you maintain your name and score. Also you can logout " +
-                       "if you want to.<p>";
-
-            showPopup(text, button, standardCloseButton(2), false);
+            showPopup(generateText.logoutText(data.name),
+                button, standardCloseButton(2), false);
         }
     });
 }
