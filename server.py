@@ -18,6 +18,7 @@ from flask.ext.restful import Api
 from flask_limiter import Limiter
 import rauth
 
+
 from raottt import Game
 from raottt import Player
 from raottt import Score
@@ -185,7 +186,7 @@ class API_Player(Resource):
     @limiter.limit('10 per minute')
     def post(self):
         """Create a new user"""
-        player = RESTPlayer.new(random.choice(('Red', 'Blue')))
+        player = RESTPlayer.new(random.choice(raottt.COLORS))
         player.save()
         return flask.make_response(json.dumps({'token': player.pid,
                                                'name': player.name,

@@ -46,7 +46,7 @@ def create_games(num_games, lower, upper):
     red = ComputerPlayer.new('Red')
 
     for i in range(num_games):
-        if random.choice(('Red', 'Blue')) == 'Red':
+        if random.choice(raottt.COLORS) == 'Red':
             game = Game.new('Red')
             player_toggle = toggle(red, blue)
         else:

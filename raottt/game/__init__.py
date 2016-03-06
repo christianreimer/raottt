@@ -13,5 +13,4 @@ NUM_PIECES_PER_PLAYER = 3
 
 def opponent(color):
     """Return the opponent to the color passed in"""
-    return 'Blue' if color == 'Red' else 'Red'
-
+    return COLORS[0] if color == COLORS[1] else COLORS[1]
