@@ -140,7 +140,7 @@ def init():
     return red, blue
 
 
-def one_sweep(red_pid, blue_pid, min_stock, lower, upper, num_games, ttl):
+def one_sweep(pid_red, pid_blue, min_stock, lower, upper, num_games, ttl):
     """Run a sweep"""
     red = ComputerPlayer(raottt.Player.load(pid_red).dumpd())
     blue = ComputerPlayer(raottt.Player.load(pid_blue).dumpd())
