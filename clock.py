@@ -22,7 +22,7 @@ def timed_job():
     num_games = 20
     ttl = 3600
 
-    one_sweep(pid_red, pid_bluespok., min_stock, lower, upper, num_games, ttl)
+    one_sweep(pid_red, pid_blue, min_stock, lower, upper, num_games, ttl)
 
 
 sched.start()
