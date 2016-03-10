@@ -2,6 +2,8 @@
 Game module
 """
 
+# pylint: disable=invalid-name
+
 from .. import DatabaseConnection
 MongoDb = DatabaseConnection()
 

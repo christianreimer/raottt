@@ -17,6 +17,9 @@ Options:
     --games=<n>       Number of games to create when stock is low [default: 10]
 """
 
+# pylint: disable=invalid-name
+# pylint: disable=too-many-locals
+
 import datetime
 import logging
 import random
@@ -45,7 +48,7 @@ def create_games(num_games, lower, upper):
     blue = ComputerPlayer.new('Blue')
     red = ComputerPlayer.new('Red')
 
-    for i in range(num_games):
+    for _ in range(num_games):
         if random.choice(raottt.COLORS) == 'Red':
             game = Game.new('Red')
             player_toggle = toggle(red, blue)
@@ -53,6 +56,7 @@ def create_games(num_games, lower, upper):
             game = Game.new('Blue')
             player_toggle = toggle(blue, red)
 
+        turns = 0  # Make pylint happy
         for turns in range(random.randint(lower, upper)):
             if game.game_over():
                 break
@@ -61,8 +65,8 @@ def create_games(num_games, lower, upper):
             game.make_move(player)
             game.validate()
 
-        logging.info('Spok created game with {} turns, next player {}'.format(
-            turns+1, game.next_color))
+        logging.info('Spok created game with %s turns, next player %s',
+                     turns+1, game.next_color)
         game.save()
 
 
@@ -72,8 +76,8 @@ def cleanup(ttl):
     game_lst = [g for g in MongoDb.game.find({'checkout': {'$lt': cutoff}})]
     for game in game_lst:
         game = Game.load(game['gid'])
-        logging.info('Spok force returning game {} checked out at {}'.format(
-            game.gid, game.checkout))
+        logging.info('Spok force returning game %s checked out at %s',
+                     game.gid, game.checkout)
         game.inplay = False
         game.player = None
         game.checkout = None
@@ -85,8 +89,8 @@ def player_and_turns(player_red, player_blue):
     avail_red = MongoDb.game.find({'next_color': 'Red', 'inplay': False}).count()
     avail_blue = MongoDb.game.find({'next_color': 'Blue', 'inplay': False}).count()
 
-    logging.info('Spok game availability red={} blue={}'.format(
-        avail_red, avail_blue))
+    logging.info('Spok game availability red %s blue %s',
+                 avail_red, avail_blue)
 
     if avail_red > avail_blue:
         return player_red, max(1, (avail_red - avail_blue) // 2)
@@ -117,11 +121,11 @@ def create():
     """Create new player"""
     red = ComputerPlayer.new('Red')
     red.save()
-    print('Created {}'.format(red))
+    print('Created %s', red)
 
     blue = ComputerPlayer.new('Blue')
     blue.save()
-    print('Created {}'.format(blue))
+    print('Created %s', blue)
 
 
 def init():
@@ -136,9 +140,32 @@ def init():
     return red, blue
 
 
+def one_sweep(red_pid, blue_pid, min_stock, lower, upper, num_games, ttl):
+    """Run a sweep"""
+    red = ComputerPlayer(raottt.Player.load(pid_red).dumpd())
+    blue = ComputerPlayer(raottt.Player.load(pid_blue).dumpd())
+
+    player, turns = player_and_turns(red, blue)
+    if turns > 1:
+        logging.info('Spok should take %s turns for the %s team',
+                     turns, player.color)
+        take_turns(turns, player)
+
+    # Cleanup abandoned games
+    cleanup(ttl)
+
+    # Make sure there are games available to play
+    stock = MongoDb.game.find({'inplay': False}).count()
+    logging.info('Spok current stock is at %s (min=%s)',
+                 stock, min_stock)
+
+    if min_stock > stock:
+        create_games(num_games, lower, upper)
+
+
 def main():
     """main"""
-    args = docopt(__doc__)
+    args = args or docopt(__doc__)
 
     if args['nuke']:
         msg = 'Are you sure you want to nuke the database: '
@@ -149,7 +176,7 @@ def main():
 
     if args['init']:
         red, blue = init()
-        print('Created red={} blue={}'.format(red.pid, blue.pid))
+        print('Created red %s blue %s', red.pid, blue.pid)
         return
 
     if args['--env']:
@@ -166,37 +193,18 @@ def main():
     upper = int(args['--upper'])
     num_games = int(args['--games'])
 
-    red = ComputerPlayer(raottt.Player.load(pid_red).dumpd())
-    blue = ComputerPlayer(raottt.Player.load(pid_blue).dumpd())
-
     while True:
         time_start = datetime.datetime.now()
 
-        # Perform moves to keep the game running
-        player, turns = player_and_turns(red, blue)
-        if turns > 1:
-            logging.info('Spok should take {} turns for the {} team'.format(
-                turns, player.color))
-            take_turns(turns, player)
-
-        # Cleanup abandoned games
-        cleanup(ttl)
-
-        # Make sure there are games available to play
-        stock = MongoDb.game.find({'inplay': False}).count()
-        logging.info('Spok current stock is at {} (min={})'.format(
-            stock, min_stock))
-
-        if min_stock > stock:
-            create_games(num_games, lower, upper)
+        one_sweep(red_pid, blue_pid, min_stock, lower, upper, num_games, ttl)
 
         time_elapsed = datetime.datetime.now() - time_start
         if time_elapsed.seconds > sleep_sec:
-            logging.error('Spok took {} sec to complete an itration'.format(
-                time_elapsed.seconds))
+            logging.error('Spok took %s sec to complete an itration',
+                          time_elapsed.seconds)
 
         time_to_sleep = max(1, sleep_sec - time_elapsed.seconds)
-        logging.debug('Spok sleeping for {} seconds'.format(time_to_sleep))
+        logging.debug('Spok sleeping for %s seconds', time_to_sleep)
         time.sleep(time_to_sleep)
 
 

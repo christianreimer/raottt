@@ -42,8 +42,6 @@ function fetchUser() {
     var deferred = $.Deferred();
     var token = $.cookie('token');
 
-    console.log("fetchUser token %o", token);
-
     if(token) {
         // Returning user
         var request = restClient.player.read(token);
@@ -73,8 +71,6 @@ function fetchUser() {
 
 
 function sayHello(data) {
-    console.log('sayHello called with %o', data);
-
     if(data.popupType == 'returningPlayer') {
         if(data.creds) {
 
@@ -112,20 +108,13 @@ function sayHello(data) {
 
 
 function getGame(token) {
-    console.log("getGame called with token %o", token);
     var deferred = $.Deferred();
-
-    if(!token) {
-        alert("Why are we getting here???");
-    }
 
     var request = restClient.game.read(token);
     request.done(function(data){
         gameId = data.ugid;
         playerColor = data.nextPlayer;
         instructions = data.instructions;
-
-        console.log('getGame returned %o', data);
         deferred.resolve(data);
     });
 
@@ -133,12 +122,10 @@ function getGame(token) {
 }
 
 function getScore(token) {
-    console.log("getScore called with token %o", token);
     var deferred = $.Deferred();
 
     var request = restClient.score.read(token);
     request.done(function(data){
-        console.log('getScore returned %o', data);
         deferred.resolve(data);
     });
 
@@ -148,8 +135,6 @@ function getScore(token) {
 
 function calculateSizeFactors(wWidth, wHeight)
 {
-    console.log('wWidth:' + wWidth + ' wHeight:'+ wHeight);
-
     var headerSize = 50;
     var maxSize = 600;
 
@@ -164,8 +149,6 @@ function calculateSizeFactors(wWidth, wHeight)
     var tileSize = Math.floor(windowSize / 3.2);
     tileSize = tileSize % 2 ? tileSize - 1 : tileSize;
 
-    console.log("wHeight:" + wHeight + " wWidth:" + wWidth + " tileSize:" + tileSize);
-
     s = {};
     s.tile = tileSize;
     s.font = Math.floor(tileSize * 0.75);
@@ -176,6 +159,7 @@ function calculateSizeFactors(wWidth, wHeight)
     s.radius = Math.floor(tileSize / 15);
     return s;
 };
+
 
 function positionBoard(sizes) {
         $("body").css("width", sizes.boardSize);
@@ -200,7 +184,6 @@ function resetBoard(token) {
 
 
 function addPieces(data) {
-    console.log("addPieces called with %o", data);
 
     function add(i, color, count, movable) {
         var div = $('<div class="ui-widget-content piece"></div>');
@@ -233,7 +216,6 @@ function addPieces(data) {
     });
 
     $(".tile").each(function(i) {
-        // console.log("tile["+i+"]");
 
         if(data.board[i].color) {
             // This position has a piece in it (see above) so we do not want
@@ -393,9 +375,6 @@ function showInstructions() {
 
 
 function showPopup(text, buttonOneDiv, buttonTwoDiv, easyClose) {
-    console.log('showPopup called with buttonOneDiv %o', buttonOneDiv);
-    console.log('showPopup called with buttonTwoDiv %o', buttonTwoDiv);
-
     spinner(false);
     
     var maxWidth = $(window).width();
@@ -433,15 +412,12 @@ function showPopup(text, buttonOneDiv, buttonTwoDiv, easyClose) {
 function setupTiles() {
     var board = $("#Board");
     for(var i=0; i<9; i++) {
-        // console.log("Append tile " + i);
         $(board).append('<div class="ui-widget-content tile"></div>');
     }
 }
 
 
 function updateScore(data) {
-    console.log("updateScore called with %o", data);
-
     var txt = $('#ScoreNumber').text();
     var num = parseInt(txt.replace(',', ''));
 
@@ -458,12 +434,9 @@ function spinner(show) {
         $.LoadingOverlay("show", {
             image: "",
             fontawesome: "fa fa-spinner fa-spin"});
-
-        // $('html').loader('show', {image: '../images/loading.gif'});
     }
     else {
         $.LoadingOverlay("hide");
-        // $('html').loader('hide');
     }
 }
 
@@ -491,12 +464,10 @@ function showDebug() {
 
 
 function getDebug(token) {
-    console.log("getDebug called with token %o", token);
     var deferred = $.Deferred();
 
     var request = restClient.debug.read(token);
     request.done(function(data){
-        console.log('getDebug returned %o', data);
         deferred.resolve(data);
     });
 
@@ -505,9 +476,7 @@ function getDebug(token) {
 
 
 function showLoginPopup() {
-    console.log("showLogingPopup called");
-
-    // Call back to the server with the uid token to determine which popuy
+    // Call back to the server with the uid token to determine which popup
     // to show
 
     getLoginType().pipe(function (data) {
@@ -538,22 +507,11 @@ function getLoginType(token) {
     var deferred = $.Deferred();
     var request = restClient.auth.read(userToken);
     request.done(function(data){
-        console.log('getAuthUrl returned %o', data);
         deferred.resolve(data);
     });
 
     return deferred.promise();
 
-}
-
-function standardCloseButton_() {
-    var button = {};
-    button.show = true;
-    button.text = "Let's Play!";
-    button.color = "PopupButtonGray";
-    button.onClickTarget = false;
-    button.close = true;
-    return button;
 }
 
 
@@ -563,8 +521,6 @@ function loadUrl(url) {
 
 
 function logOut() {
-    console.log("Logout called");
-
     spinner(true);
     $.removeCookie('token');
 

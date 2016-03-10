@@ -15,8 +15,6 @@ Options:
 
 from docopt import docopt
 
-import raottt
-from raottt.game import opponent
 from raottt.game.game import Game
 from raottt.player.computer import ComputerPlayer
 from raottt.player.human import HumanPlayer
@@ -48,7 +46,7 @@ def run_game(player1, player2, max_rounds, show=False):
         game.validate()
 
         print(Color.me(player.color, "{}'s Score: {}".format(
-                player.name, player.score)))
+            player.name, player.score)))
 
         if show:
             game.show()

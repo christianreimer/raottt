@@ -1,2 +1,2 @@
 web: gunicorn server:app
-worker: python spok.py play --env
+clock: clock.py

@@ -13,13 +13,9 @@ dimension for the player to consider.
 
 Finally, a player is expected to participate in many simultanious games against
 many different players. Essentially, each turn will be taken in the context of
-a different game. When a game is won or lost, all the players who have taken 
+a different game. When a game is won or lost, all the players who have taken
 part of tht game will reveice a score update.
 """
-
-__author__ = "Christian Reimer"
-__version__ = "0.0.1"
-
 
 from .util import logger
 logger.setup()
@@ -29,3 +25,6 @@ from .game.game import Game
 from .game.score import Score
 from .player.player import Player
 from .game import COLORS
+
+__author__ = "Christian Reimer"
+__version__ = "0.0.1"

@@ -60,3 +60,4 @@ target/
 *.json
 *.secret
 .DS_Store
+.pylintrc
