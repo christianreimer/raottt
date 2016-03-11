@@ -12,6 +12,7 @@ import uuid
 import names
 import bson
 
+from ..game import COLORS
 from .. import DatabaseConnection
 MongoDb = DatabaseConnection()
 
@@ -26,7 +27,7 @@ class Player(object):
         if not state.get('name'):
             state['name'] = names.get_first_name()
         if not state.get('color'):
-            state['color'] = random.choice(['Blue', 'Red'])
+            state['color'] = random.choice(COLORS)
         if not state.get('twitter_creds'):
             state['twitter_creds'] = False
         if not state.get('score'):
@@ -42,7 +43,7 @@ class Player(object):
     def new(cls, color):
         """Create new player"""
         player = cls({'color': color})
-        logging.debug('Created {}'.format(player))
+        logging.debug('Created %s', player)
         return player
 
     @classmethod
@@ -62,14 +63,14 @@ class Player(object):
                     pid, twitter_name))
 
         player = cls(state_name or state_pid)
-        logging.debug('Loaded {}'.format(player))
+        logging.debug('Loaded %s', player)
         return player
 
     def save(self):
         """Save player state to database"""
         MongoDb.player.update_one({'pid': self.pid},
                                   {'$set': self.dumpd()}, upsert=True)
-        logging.debug('Saved {}'.format(self.__str__()))
+        logging.debug('Saved %s', self.__str__())
 
     def dumpd(self):
         """Return state as a dict"""

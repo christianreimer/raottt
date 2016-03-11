@@ -194,28 +194,6 @@ class API_Player(Resource):
                                                'score': player.score,
                                                'popupType': 'newPlayer'}))
 
-    # @limiter.limit('10 per minute')
-    # def patch(self, uid):
-    #     """Update user"""
-    #     try:
-    #         color = flask.request.form['color']
-    #     except (KeyError, ValueError):
-    #         logging.error('API_Player.patch could not extract color for pid %s '
-    #                       'from request %s', uid, flask.request)
-    #         return flask.make_response(oh_no())
-
-    #     player = Player.load(uid, None)
-    #     player.color = color
-    #     player.save()
-    #     logging.info('Player {} has changed color to {}'.format(
-    #         player.pid, color))
-
-    #     return flask.make_response(json.dumps({'token': player.pid,
-    #                                            'name': player.name,
-    #                                            'color': player.color,
-    #                                            'score': player.score,
-    #                                            'popupType': 'updatedPlayer'}))
-
 
 class API_Score(Resource):
     """Score API endpoint"""
