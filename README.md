@@ -1,6 +1,8 @@
 
 # Random Acts Of Tic Tac Toe
 
+[Click here to play!](http://raottt.herokuapp.com)
+
 A modified version of Tic Tac Toe (Noughts and Crosses, Xs and Os) where each
 player only gets 3 pieces. Once a player has placed all pieces on the board,
 subsequent moves are made by moving a piece to an empty spot. Thus, the game
