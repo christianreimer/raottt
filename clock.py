@@ -11,7 +11,7 @@ import spok
 sched = BlockingScheduler()
 
 
-@sched.scheduled_job('interval', minutes=2)
+@sched.scheduled_job('interval', minutes=1)
 def timed_job():
     pid_red = os.environ['SPOK_RED']
     pid_blue = os.environ['SPOK_BLUE']

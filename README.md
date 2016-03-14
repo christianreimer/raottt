@@ -65,12 +65,14 @@ Simply try ```./play --show``` to get started ...
 
 ### REST API
 
-Describe REST API here
+The backend is exposed as a REST service built using [Flask](http://flask.pocoo.org/). It has endpoints for Game, Player, Score, and Authentication. The authentication is Twitter oauth, and is simply there to allow people to play across devices without having to register yet another place ...
 
 ### Browser
 
-Describe the jquery based web interface here
+The primary UI is JavaScript and HTML using JQuery and JQuery Touch to give a decent experience on a touch screen. The Nature of the game -- moving pieces around -- lends itself nicely to touch screens. Also, the UI is so simple that it is well suited for smaller screens such as phones.
 
 ## Spok
 
-Describe the purpose of spok here
+Spok is a helper task that runs periodically in the background. The purpose of Spok is to make sure the game play can always continue. This is done by making sure there are always games ready to be played by either color. Spok ensures this by starting new games as needed and using a min-max algorithm, plays a few rounds of the game.
+
+Spok also does housekeeping. Most importantly is finding games that have been abandoned and returning them to the pool. This is needed so that games with potentially long history -- and thus high value -- are not lost simply because a player was served a game and then stopped playing before taking their turn.
