@@ -3,6 +3,8 @@
 
 [Click here to play!](http://raottt.herokuapp.com)
 
+NOTE: The app is running on two free Heroky Dynos, so it may take a few seconds to spin up if they are asleep ...
+
 A modified version of Tic Tac Toe (Noughts and Crosses, Xs and Os) where each
 player only gets 3 pieces. Once a player has placed all pieces on the board,
 subsequent moves are made by moving a piece to an empty spot. Thus, the game
