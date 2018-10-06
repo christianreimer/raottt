@@ -299,9 +299,15 @@ def login_redirect():
     """Redirect to the Twitter auth login service"""
     callback_url = flask.url_for('callback', _external=True)
     logging.info('***** callbacl_url: %s', callback_url)
-    token = twitter.get_request_token(params={'oauth_callback': callback_url})
-    logging.info('login_redirect callback url %s token %s',
-                 callback_url, token)
+    try:
+        token = twitter.get_request_token(
+            params={'oauth_callback': callback_url})
+    except KeyError:
+        logging.error('Failed to get token fro twitter callback')
+        logging.error('Received: %s', str(token))
+        return flask.redirect(flask.url_for('root'))
+
+        logging.info('login_redirect callback url %s token %s', callback_url, token)
     return flask.redirect(twitter.get_authorize_url(token[0]))
 
 
