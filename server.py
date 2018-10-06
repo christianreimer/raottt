@@ -285,7 +285,7 @@ api.add_resource(API_Auth, '/auth/', '/auth/<string:uid>/')
 
 twitter = rauth.OAuth1Service(
     name='twitter',
-    consumer_key='Gj4uIVgztBtLcdZXquupij9ph',
+    consumer_key='SyTUvaQ4zedclrQpRYSRjWa74',
     consumer_secret=os.environ.get('TWITTER_CONSUMER_SECRET', ''),
     request_token_url='https://api.twitter.com/oauth/request_token',
     authorize_url='https://api.twitter.com/oauth/authorize',
