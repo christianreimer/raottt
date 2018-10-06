@@ -269,7 +269,7 @@ class API_Auth(Resource):
 
         # If the current user does not have twitter_creds, then bring up the
         # do you want to login popup
-        print('login_redirect_url:', flask.url_for('login_redirect'))
+        logging.info('login_redirect_url: %s', flask.url_for('login_redirect'))
         return flask.make_response(
             json.dumps(
                 {'popupType': 'startLogin',
@@ -298,7 +298,7 @@ twitter = rauth.OAuth1Service(
 def login_redirect():
     """Redirect to the Twitter auth login service"""
     callback_url = flask.url_for('callback', _external=True)
-    print('****************************callbacl_url:', callback_url)
+    logging.info('***** callbacl_url: %s', callback_url)
     token = twitter.get_request_token(params={'oauth_callback': callback_url})
     logging.info('login_redirect callback url %s token %s',
                  callback_url, token)
