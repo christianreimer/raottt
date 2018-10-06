@@ -103,7 +103,7 @@ class API_Game(Resource):
         if not game:
             # Instead of giving the player an error, we just pretend to have
             # processed the move and they will get a new game. They probably
-            # wont event notice ...
+            # wont notice ...
             return flask.make_response(json.dumps({'displayMsg': False,
                                                    'message': '',
                                                    'score': player.score}))
@@ -180,7 +180,7 @@ class API_Player(Resource):
                                                'name': player.name,
                                                'color': player.color,
                                                'score': player.score,
-                                               'creds' : player.twitter_creds,
+                                               'creds': player.twitter_creds,
                                                'popupType': popup_type}))
 
     @limiter.limit('10 per minute')
@@ -269,6 +269,7 @@ class API_Auth(Resource):
 
         # If the current user does not have twitter_creds, then bring up the
         # do you want to login popup
+        print('login_redirect_url:', flask.url_for('login_redirect'))
         return flask.make_response(
             json.dumps(
                 {'popupType': 'startLogin',
@@ -297,6 +298,7 @@ twitter = rauth.OAuth1Service(
 def login_redirect():
     """Redirect to the Twitter auth login service"""
     callback_url = flask.url_for('callback', _external=True)
+    print('****************************callbacl_url:', callback_url)
     token = twitter.get_request_token(params={'oauth_callback': callback_url})
     logging.info('login_redirect callback url %s token %s',
                  callback_url, token)
@@ -334,5 +336,5 @@ def root():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=8888)
+    app.run(host='0.0.0.0')  # , debug=True, port=8888)
 

@@ -76,7 +76,7 @@ class ComputerPlayer(Player):
         elif winner == opponent(color):
             return -1 * (INFINITY + horizon)
         # Make sure that initial best_value is worse than the worst possible
-        # move which would be to loose, and have a value on -(INFINITY+1)
+        # move which would be to loose, and have a value of -(INFINITY+1)
         best_value = -1 * INFINITY
         for (source, target) in board.available_moves(color):
             board.make_move(color, source, target)

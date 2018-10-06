@@ -11,11 +11,10 @@ import uuid
 import random
 import logging
 
-from ..game import COLORS
 from ..game import opponent
 from ..util import Color
 from .board import Board
-from .score import Score    
+from .score import Score
 
 from .. import DatabaseConnection
 MongoDb = DatabaseConnection()
@@ -87,9 +86,9 @@ class Game(object):
     @classmethod
     def pick(cls, player, create_if_needed=True):
         """Picks an existing game that can be played by the specified player.
-        If no suitable game is found, a new one will be created and returned."""
-        gid_lst = [record['gid'] for record in \
-            MongoDb.game.find({'next_color': player.color, 'inplay': False})]
+        If no suitable game is found, a new one is created and returned."""
+        gid_lst = [record['gid'] for record in MongoDb.game.find(
+                    {'next_color': player.color, 'inplay': False})]
 
         logging.debug('{} can pick from {} possibilities'.format(
             player.color, len(gid_lst)))
@@ -106,9 +105,9 @@ class Game(object):
         utc_now = datetime.datetime.utcnow()
 
         game = cls.loadd(MongoDb.game.find_and_modify(
-            query={'gid': gid}, update={'$set':{'inplay': True,
-                                                'checkout': utc_now,
-                                                'player': player.pid}}))
+            query={'gid': gid}, update={'$set': {'inplay': True,
+                                                 'checkout': utc_now,
+                                                 'player': player.pid}}))
 
         logging.debug('Picked {} for pid {}'.format(game, player.pid))
         return game
@@ -145,9 +144,9 @@ class Game(object):
                 'nextPlayer': self.next_color,
                 'ugid': self.gid,
                 'offBoard': sum([1 for (s, _) in pos_moves if s < 0]) > 0}
-   
+
     def make_move(self, player):
-        """Obtain a move from the passed in player, and then applies that move
+        """Obtain a move from the passed in player, and then apply that move
         to the game."""
         color = player.color
         opp_color = opponent(player.color)
@@ -180,7 +179,7 @@ class Game(object):
 
     def cleanup(self, winner):
         """Called after a game has been won"""
-        _ = self.score.post_game(winner)
+        self.score.post_game(winner)
         logging.info('Game cleanup {}'.format(self.__str__()))
         self.delete()
 
@@ -234,4 +233,3 @@ def create_new_games(num_games, color):
         game.save()
         game_lst.append(game.gid)
     return game_lst
-

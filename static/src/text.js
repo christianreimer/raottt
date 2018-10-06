@@ -16,9 +16,9 @@ var generateText = {
               "<span class='help-text-" + color + "'>" + color + "</span> team. " + 
               "You have <b>" + score + "</b> points (way to go!)</p>" + 
 
-              "<p>You can login with Twitter if you want a different name, and remember that " + 
-              "you can click the <span class='green-mini-button'><i class='fa fa-info-circle'></i></span> " +
-              "at any time for instructions.</p>";
+              "<p>You can login with Twitter if you want a different name, " +
+              "and remember that you can click the <span class='green-mini-button'>" +
+              "<i class='fa fa-info-circle'></i></span> at any time for instructions.</p>";
     },
 
     returnGreetingCreds: function(name, color, score) {
